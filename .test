@@ -1,0 +1,498 @@
+const Savings = require("./models/CircleSavings");
+const countryCode = require("./util/countryCode");
+const bcrypt = require("bcrypt");
+const { response } = require("express");
+const qs = require("qs");
+const axios = require("axios");
+
+
+const sendSMS = async (phoneNumber, message) => {
+  const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
+  const USERNAME = "sandbox";
+  const SMS_URL = `https://api.sandbox.africastalking.com/version1/messaging`;
+
+  try {
+    const response = await axios.post(SMS_URL, qs.stringify({
+      to: phoneNumber,
+      message: message,
+      apiKey: API_KEY,
+      username: USERNAME,
+    }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        apiKey: API_KEY,
+        username: USERNAME,
+      }
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const sendSMS2 = async (phoneNumber, message) => {
+  const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
+  const USERNAME = "sandbox";
+  const SMS_URL = `https://api.sandbox.africastalking.com/version1/messaging`;
+
+  try {
+    const response = await axios.post(SMS_URL, qs.stringify({
+      to: phoneNumber,
+      message: message,
+      apiKey: API_KEY,
+      username: USERNAME,
+    }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        apiKey: API_KEY,
+        username: USERNAME,
+      }
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const credentials = {
+  apiKey: process.env.apiKey,
+  username: process.env.username
+};
+
+const Circle = {
+ /**
+         Tasks to be finished
+
+  1. Menu for both registered and unregistered members
+  2. Creating a group, check if the group alread exists
+  3. Join a group, check if member does not exit in any of the group and proceed with joining the group
+  */
+
+  CircleSavings: async (textArray,phoneNumber) => {
+   // Checks DB for the receivers details and returns the value
+   async function confirmDetails() {
+    let user = await Savings.findOne({ number: phoneNumber });
+    return user;
+  }
+
+  // Assigns the user to a variable for manipulation
+  let user = await confirmDetails();
+     
+    let response = "";
+    let text = ''
+    const level = textArray.length;
+
+        if(level == 1){
+          response = `CON Select an action below
+          1.Join a group 
+          2.Create a group   
+           `;
+         return response;
+        }if(level == 2 && textArray[1] == 2){
+          response = `CON Enter your fullname`;
+          return response;
+        }if(level == 3 ){
+          response = `CON The Government type can be 
+                      1.Admin 
+                      2.Multi-Admin 
+                      3.1 vote per person 
+                      4.1 vote per $ deposit
+                    `;
+          return response;
+        }if(level == 4 && textArray[3] ==1 ){
+          response = `CON Enter admin number`;
+          return response;
+        }if(level == 5 ){
+          response = `CON Enter group name`;
+          return response;
+        }if(level == 6 ){
+          response = `CON Enter deposit  goal`;
+          return response;
+        }if(level == 7 ){
+          response = `CON Enter new group Invite code `;
+          return response;
+        }if(level == 8 ){
+          response = `CON Enter penalty fee`;
+          return response;
+        }if(level == 9){
+          response = `CON Verfiy info before continuing
+                       Gov Type = Admin
+                       Admins = ${textArray[3]}
+                       Circle Name =  ${textArray[5]}
+                       Deposit Goal = ${textArray[6]}
+                       Late Penalty = ${textArray[8]}
+
+                       1.Confirm & Continue
+                       2.Redo
+                     `;
+          return response;
+        }if(level == 10 && textArray[9] == 1 ){
+          response = `CON Enter a user number to invite `;
+          return response;
+        }if(level == 11 ){
+          const userNumber = countryCode(textArray[10]);
+          const user = await Savings.findOne({ "GroupMembers.MemberPhoneNumber":  userNumber });
+          
+          let member = phoneNumber;
+          if(user){
+            response = `CON ${member} is already a member of this circle.
+                         1. Enter a new phone number
+                         0. Finsih making a circle
+                       `;
+                       return response;
+          }
+        }if(level == 12 && textArray[11] == 1){
+          response =`CON Enter phone number `
+          return response;
+
+        }if(level == 13){
+            let num = textArray[12];
+            num = phoneNumber;
+
+            let circle = textArray[5];
+            let code = textArray[7];
+
+          sendSMS(num, rs`You have been invited to join ${circle} and group invite code is ${code}.Dial *384*199726#, to start using our services.`);
+           response = `END You have successfully invited ${textArray[12]},to join the circle.`;
+           return response;
+
+        }else if(level == 14 && textArray[3] == 2){
+          response = `CON Enter number for the first admin`;
+          return response;
+        }if(level == 15){
+          response = `CON Enter number for the second admin`;
+          return response;
+        }if(level == 16 ){
+          response = `CON Enter group name`;
+          return response;
+        }if(level == 17 ){
+          response = `CON Enter deposit  goal`;
+          return response;
+        }if(level == 18 ){
+          response = `CON Enter new group Invite code `;
+          return response;
+        }if(level == 19 ){
+          response = `CON Enter penalty fee`;
+          return response;
+        }if(level == 20){
+          response = `CON Verfiy info before continuing
+                       Gov Type = Admin
+                       Admins = 2
+                       Circle Name =  ${textArray[14]}
+                       Deposit Goal = ${textArray[15]}
+                       Late Penalty = ${textArray[17]}
+
+                       1.Confirm & Continue
+                       2.Redo
+                     `;
+          return response;
+        }if(level == 21 && textArray[9] == 1 ){
+          response = `CON Enter a user number to invite `;
+          return response;
+        }if(level == 22 ){
+          const userNumber = countryCode(textArray[10]);
+          const user = await Savings.findOne({ "GroupMembers.MemberPhoneNumber":  userNumber });
+          
+          let member = phoneNumber;
+          if(user){
+            response = `CON ${member} is already a member of this circle.
+                         1. Enter a new phone number
+                         0. Finsih making a circle
+                       `;
+                       return response;
+          }
+        }if(level == 24 && textArray[11] == 1){
+          response =`CON Enter phone number `
+          return response;
+
+        }if(level == 25){
+            let num = textArray[12];
+            num = phoneNumber;
+
+            let circle = textArray[5];
+            let code = textArray[7];
+
+          sendSMS(num, `You have been invited to join ${circle} and group invite code is ${code}.Dial *384*199726#, to start using our services.`);
+           response = `END You have successfully invited ${textArray[12]},to join the circle.`;
+           return response;
+
+        }if(level == 16) {
+          // proceed to register user
+          async function createGroup() {
+            const SavingsData = {
+             number: phoneNumber,
+             Creator: textArray[2],
+             GovType: textArray[3], 
+             AdminNumber: textArray[4], 
+             GroupName: textArray[5],
+             DepositGoal: textArray[6],
+             InviteCode: textArray[7],
+             PenaltyFee: textArray[8],
+            };
+    
+    
+            // create user and register to DB
+            let Member = await Savings.create(SavingsData);
+            return Member;
+          }
+    
+          // Assigns the created user to a variable for manipulation
+          let Member = await createGroup();
+          // If user creation failed
+          if (!Member) {
+            response = "END An unexpected error occurred... Please try again later";
+          }
+          // if user creation was successful
+          else {
+            let owner =Member.Creator;
+            let code = Member.InviteCode;
+            
+        // Call the sendSMS function after successful registration
+            // sendSMS2(phoneNumber, "Congratulations! You have successfully registered with Pollen.");
+            response = `END Congratulations ${owner}, You have successfully registered the group. Your group invite code is ${code} .`;
+          }
+        }if(level == 17 && textArray[12] ==1){
+           response = `CON Re-enter phone number to invite the user`;
+           return response;
+        }if(level == 18){
+          let num = textArray[13];
+            num = phoneNumber;
+
+            let circle = textArray[5];
+            let code = textArray[7];
+
+          sendSMS(num, `You have been invited to join ${circle} and group invite code is ${code}.Dial *384*199726#, to start using our services.`);
+           response = `END You have successfully invited ${textArray[13]},to join the circle.`;
+           return response;
+
+        }
+
+  }
+  
+};
+
+module.exports = Circle;
+
+
+
+
+
+
+
+if(level == 10 && textArray[9] == 1 ){
+  response = `CON Enter a user number to invite `;
+  return response;
+}if(level == 11 ){
+  const userNumber = countryCode(textArray[10]);
+  const user = await Savings.findOne({ "GroupMembers.MemberPhoneNumber":  userNumber });
+  
+  let member = phoneNumber;
+  if(user){
+    response = `CON ${member} is already a member of this circle.
+                 1. Enter a new phone number
+                 0. Finsih making a circle
+               `;
+               return response;
+  }
+}if(level == 12 && textArray[11] == 1){
+  response =`CON Enter phone number `
+  return response;
+
+}if(level == 13){
+    let num = textArray[12];
+    num = phoneNumber;
+
+    let circle = textArray[5];
+    let code = textArray[7];
+
+  sendSMS(num, rs`You have been invited to join ${circle} and group invite code is ${code}.Dial *384*199726#, to start using our services.`);
+   response = `END You have successfully invited ${textArray[12]},to join the circle.`;
+   return response;
+
+}
+
+else if(level == 14 && textArray[3] == 2){
+  response = `CON Enter number for the first admin`;
+  return response;
+}if(level == 15){
+  response = `CON Enter number for the second admin`;
+  return response;
+}if(level == 16 ){
+  response = `CON Enter group name`;
+  return response;
+}if(level == 17 ){
+  response = `CON Enter deposit  goal`;
+  return response;
+}if(level == 18 ){
+  response = `CON Enter new group Invite code `;
+  return response;
+}if(level == 19 ){
+  response = `CON Enter penalty fee`;
+  return response;
+}if(level == 20){
+  response = `CON Verfiy info before continuing
+               Gov Type = Admin
+               Admins = 2
+               Circle Name =  ${textArray[14]}
+               Deposit Goal = ${textArray[15]}
+               Late Penalty = ${textArray[17]}
+
+               1.Confirm & Continue
+               2.Redo
+             `;
+  return response;
+}if(level == 21 && textArray[9] == 1 ){
+  response = `CON Enter a user number to invite `;
+  return response;
+}if(level == 22 ){
+  const userNumber = countryCode(textArray[10]);
+  const user = await Savings.OneAdmin.findOne({ "GroupMembers.MemberPhoneNumber":  userNumber });
+  
+  let member = phoneNumber;
+  if(user){
+    response = `CON ${member} is already a member of this circle.
+                 1. Enter a new phone number
+                 0. Finsih making a circle
+               `;
+               return response;
+  }
+}if(level == 23){
+  const userNumber = countryCode(textArray[10]);
+  const user = await Savings.findOne({ "GroupMembers.MemberPhoneNumber":  userNumber });
+  
+  let member = phoneNumber;
+  if(!user){
+    response = `CON ${member} is not  a member of this circle.
+                 1. Enter a new phone number
+                 0. Finsih making a circle
+               `;
+               return response;
+  }
+}if(level == 24 && textArray[11] == 1){
+  response =`CON Enter phone number `
+  return response;
+
+}if(level == 25){
+    let num = textArray[12];
+    num = phoneNumber;
+
+    let circle = textArray[5];
+    let code = textArray[7];
+
+  sendSMS(num, `You have been invited to join ${circle} and group invite code is ${code}.Dial *384*199726#, to start using our services.`);
+   response = `CON You have successfully invited ${textArray[12]},to join the circle.`;
+   return response;
+
+}if(level == 16) {
+  // proceed to register user
+  async function createGroup() {
+   
+    const SavingsData = {
+     AdminNumber: phoneNumber,
+     AdminName: textArray[2],
+     GovType: textArray[3], 
+     AdminNumber: textArray[4], 
+     GroupName: textArray[5],
+     DepositGoal: textArray[6],
+     GroupCode: textArray[7],
+     Penalty: textArray[8],
+    };
+    
+
+    // create user and register to DB
+    let Member = await Savings.create(SavingsData);
+    return Member;
+  }
+
+  // Assigns the created user to a variable for manipulation
+  let Member = await createGroup();
+  // If user creation failed
+  if (!Member) {
+    response = "END An unexpected error occurred... Please try again later";
+  }
+  // if user creation was successful
+  else {
+    let owner =Member.AdminName;
+    let code = Member.GroupCode;
+    
+// Call the sendSMS function after successful registration
+    // sendSMS2(phoneNumber, "Congratulations! You have successfully registered with Pollen.");
+    response = `END Congratulations ${owner}, You have successfully registered the group. Your group invite code is ${code} .`;
+  }
+}if(level == 17 && textArray[12] ==1){
+   response = `CON Re-enter phone number to invite the user`;
+   return response;
+}if(level == 18){
+  let num = textArray[13];
+    num = phoneNumber;
+
+    let circle = textArray[5];
+    let code = textArray[7];
+
+  sendSMS(num, `You have been invited to join ${circle} and group invite code is ${code}.Dial *384*199726#, to start using our services.`);
+   response = `END You have successfully invited ${textArray[13]},to join the circle.`;
+   return response;
+
+}
+
+
+
+
+
+
+ // if(level == 5 ){
+      //   response = `CON Enter penalty fee`;
+      //   return response;
+      // }if(level == 6){
+      //   const govType = textArray[1];
+      //   const defaults = defaultValues[govType];
+
+      //   response = `CON Verfiy info before continuing
+      //                Gov Type =  ${defaults.Admin}
+      //                Admins = 1
+      //                Circle Name =  ${textArray[2]}
+      //                Deposit Goal = ${textArray[4]}
+      //                Late Penalty = ${textArray[5]}
+
+      //                1.Confirm & Finish making a circle 
+      //                2.Redo
+      //              `;
+      //   return response;
+      // }if(level == 7 && textArray[6] ==1){
+      //   // proceed to register user
+       
+      //   async function createGroup() {
+      //     const groupCode = shortid.generate(); // generate a unique invite code
+      //     const SavingsData = {
+      //      AdminNumber: phoneNumber,
+      //      GovType: "Admin",
+      //      GroupName: textArray[2],
+      //      DepositGoal: textArray[4],
+      //      GroupCode: groupCode,
+      //      Penalty: textArray[5],
+      //     };
+          
+  
+      //     // create user and register to DB
+      //     let Member = await Savings.create(SavingsData);
+      //     return Member;
+      //   }
+  
+      //   // Assigns the created user to a variable for manipulation
+      //   let Member = await createGroup();
+      //   // If user creation failed
+      //   if (!Member) {
+      //     response = "END An unexpected error occurred... Please try again later";
+      //   }
+      //   // if user creation was successful
+      //   else {
+        
+          
+      // // Call the sendSMS function after successful registration
+      //     // sendSMS2(phoneNumber, "Congratulations! You have successfully registered with Pollen.");
+          
+      //     response = `END Congratulations! You have successfully registered the group.
+             
+      //     `;
+      //   }
+      // }
