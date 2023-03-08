@@ -240,7 +240,10 @@ const handleMember = async (textArray, phoneNumber) => {
   }
   
   
-  
+  if (level === 3 && textArray[2] === '2' ) {
+    response = `CON Request Loan Area`;
+    return response;
+  }
   
   
   

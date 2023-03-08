@@ -66,7 +66,7 @@ const UserSchema = mongoose.Schema({
      pin: {
        type: String,
        required:true
-     }
+     },
      
    });
 
