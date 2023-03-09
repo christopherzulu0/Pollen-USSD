@@ -241,7 +241,26 @@ const handleMember = async (textArray, phoneNumber) => {
   
   
   if (level === 3 && textArray[2] === '2' ) {
-    response = `CON Request Loan Area`;
+    const selectedCircleIndex = parseInt(textArray[1]) - 1;
+    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const selectedCircle = userCircles[selectedCircleIndex];
+  
+    // Check if the user is in debt
+    const userDebt = selectedCircle.InDebtMembers.find(member => member.MemberPhoneNumber === phoneNumber);
+    const amount = userDebt ? userDebt.Amount : 0;
+    
+    if(userDebt){
+      response =`CON You still owe ${selectedCircle.GroupName}, the amount of ${userDebt.Amount}`;
+      return response;
+    }if(!userDebt){
+      response = `CON Why do you need a loan?
+                  Write a description..
+                `;
+      return response;
+    }
+  } if (level === 4 && textArray[2] === '2' ) {
+        response = `CON Enter the amount you want to borrow
+         `;
     return response;
   }
   

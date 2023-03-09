@@ -1,8 +1,9 @@
-const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
+const {Transaction, Wallet, User,Savings,PersonalSavings} = require('./models/Schemas');
 const axios = require("axios");
 const countryCode = require("./util/countryCode");
 const bcrypt = require("bcrypt");
 const qs = require("qs");
+const { response } = require('express');
 
 
 
@@ -156,6 +157,17 @@ const menu = {
     
             // create user and register to DB
             let user = await User.create(userData);
+
+             // create savings account for user
+            let savingsAccount = await PersonalSavings.create({
+              user: user._id,
+              balance: 0
+            });
+
+            // update user with savings account
+            user.savingsAccount = savingsAccount._id;
+            user.save();
+
             return user;
           }
     
@@ -185,10 +197,96 @@ const menu = {
   ,
   
 
-  CheckBalance: async (textArray) => {
-    let response = "END This balance checking will be available soon...";
+  PersonalSavings: async (textArray, phoneNumber) => {
+    const level = textArray.length;
+    let response = "";
+    
+    const user = await User.findOne({ number: phoneNumber });
+    const bal = await Wallet.findOne({ user: user._id });
+    const mybalance = bal ? bal.balance : 0;
+  
+    const savingsbalance = await PersonalSavings.findOne({ user: user._id });
+  
+    switch (level) {
+      case 1:
+        response = `CON Earn interest on your digital Dollars via Defi, current interest rate:
+                    [APY]% 
+                    Your wallet balance: $${mybalance}
+                    Your savings balance: $${savingsbalance.balance}
+  
+                    1. Deposit to savings
+                    2. Withdraw from savings
+                    `;
+        break;
+      case 2:
+        if (textArray[1] == 1) {
+          response = `CON Enter an amount to deposit to savings.
+                      Available wallet balance:
+                      $${mybalance}
+          `;
+        } else if (textArray[1] == 2) {
+          response = `CON Enter an amount to withdraw from savings.
+                       Available savings balance: $${savingsbalance.balance}
+                       `;
+        }
+        break;
+      case 3:
+        let amount = textArray[2];
+  
+        if (textArray[1] == 1) {
+          if (amount > bal.balance) {
+            response = `END You have insufficient balance`;
+            return response;
+          } else {
+            response = `CON Enter your pin to deposit $${amount} into savings.
+                        `;
+          }
+        } else if (textArray[1] == 2) {
+          if (amount > savingsbalance.balance) {
+            response = `END You have insufficient savings balance`;
+            return response;
+          } else {
+            response = `CON Enter your pin to withdraw $${amount} from savings.
+                        `;
+          }
+        }
+        break;
+      case 4:
+        const pin = textArray[3];
+        const user = await User.findOne({ number: phoneNumber });
+  
+        if (pin != user.pin) {
+          response = `END Incorrect PIN. Please try again.`;
+          return response;
+        } else {
+          let amount = textArray[2];
+          if (textArray[1] == 1) {
+            // Deduct amount from wallet balance
+            bal.balance -= amount;
+            // Add amount to savings balance
+            savingsbalance.balance = Number(savingsbalance.balance) + Number(amount);
+            await savingsbalance.save();
+            await bal.save();
+            response = `END Successfully deposited $${amount} to your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+          } else if (textArray[1] == 2) {
+            // Deduct amount from savings balance
+            savingsbalance.balance -= amount;
+            // Add amount to wallet balance
+            bal.balance = Number(bal.balance) + Number(amount);
+            await savingsbalance.save();
+            await bal.save();
+            response = `END Successfully withdrew $${amount} from your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+          }
+          return response;
+        }
+      default:
+        break;
+    }
+  
     return response;
-  },
+}
+
+  ,
   WithdrawMoney: async (textArray, phoneNumber) => {
     const level = textArray.length;
     let response = '';
@@ -277,12 +375,16 @@ const menu = {
   },
   SendMoney: async (textArray, phoneNumber) => { 
     const level = textArray.length;
+    let response= "";
     if (level == 1) {
-      return (response = "CON Enter mobile number of the receiver:");
+      response = `CON Enter mobile number of the receiver:`;
+      return response;
     } else if (level == 2) {
-      return (response = "CON Enter amount:");
+    response = `CON Enter amount:`;
+      return response;
     } else if (level == 3) {
-      return (response = "CON Enter your PIN:");
+   response = `Enter your PIN:`;
+      return response;
     } else if (level == 4) {
       let response = "";
   
@@ -372,13 +474,17 @@ const menu = {
     let text ="";
 
     const user = await User.findOne({ number: phoneNumber });
-        const mybalance = await Wallet.findOne({ user: user._id });
+    const bal = await Wallet.findOne({ user: user._id });
+    const mybalance = bal ?  bal.balance : 0;
+
+  
+    const savingsbalance = await PersonalSavings.findOne({ user: user._id });
 
     if(text == ""){
       response = `CON View your account balances
       
-      Your wallet balance $${mybalance.balance}
-      Your savings balance $
+      Your wallet balance $${mybalance}
+      Your savings balance $${savingsbalance.balance}
       Your circle balance $
       `;
       return response;

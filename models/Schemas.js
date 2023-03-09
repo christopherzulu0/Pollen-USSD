@@ -20,6 +20,23 @@ const transactionSchema = new mongoose.Schema({
   }
 });
 
+const personalsavingsSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  balance: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  transactions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Transaction'
+  }]
+});
+
 const walletSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -176,5 +193,6 @@ const Transaction = mongoose.model('Transaction', transactionSchema);
 const Wallet = mongoose.model('Wallet', walletSchema);
 const User = mongoose.model('User', UserSchema);
 const Savings = mongoose.model('Savings', CircleSchema);
+const PersonalSavings = mongoose.model('PersonalSavings', personalsavingsSchema);
 
-module.exports = { Transaction, Wallet, User,Savings };
+module.exports = { Transaction, Wallet, User,Savings,PersonalSavings };

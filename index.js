@@ -6,6 +6,7 @@ const {
     Register,
     SendMoney,
     WithdrawMoney,
+    PersonalSavings,
     CheckBalance,
     unregisteredMenu
    
@@ -92,7 +93,7 @@ router.post("/", (req, res) => {
             response = await CircleSavings(textArray, phoneNumber);
             break;
           case "2": 
-              response = await Savings(textArray, phoneNumber);
+              response = await PersonalSavings(textArray, phoneNumber);
               break;
           case "3":
               response = await CheckBalance(textArray,phoneNumber);
