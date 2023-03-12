@@ -1,6 +1,39 @@
 const mongoose = require('mongoose');
 const shortid = require('shortid');
 
+
+// const loanRequestSchema = new mongoose.Schema({
+//   memberPhoneNumber: {
+//     type: Number,
+//     required: true
+    
+//   },
+//   loanReason: {
+//     type: String,
+//     required: true
+//   },
+//   loanAmount: {
+//     type: Number,
+//     required: true,
+//   },
+//   approvalVotes: {
+//     type: [String],
+//     default: []
+//   },
+//   rejectionVotes: {
+//     type: [String],
+//     default: []
+//   },
+//   approved: {
+//     type: Boolean,
+//     default: false
+//   },
+//   rejected: {
+//     type: Boolean,
+//     default: false
+//   }
+// });
+
 const transactionSchema = new mongoose.Schema({
   sender: {
     type: mongoose.Schema.Types.ObjectId,
@@ -132,18 +165,36 @@ const UserSchema = mongoose.Schema({
       type: Boolean,
       required: false
     },
-    PendingVotes: [{
+    LoanRequest: [{
       MemberPhoneNumber: {
         type: Number,
-        required: true,
-        unique: true
+        required: true 
       },
-      VotedOn: {
-        type: Date,
-        default: null
+      LoanReason: {
+        type: String,
+        required: true
+      },
+      LoanAmount: {
+        type: Number,
+        required: true,
+      },
+      ApprovalVotes: {
+        type: [String],
+        default: []
+      },
+      RejectionVotes: {
+        type: [String],
+        default: []
+      },
+      Approved: {
+        type: Boolean,
+        default: false
+      },
+      Rejected: {
+        type: Boolean,
+        default: false
       }
     }],
-  
     createdAt: {
       type: Date,
       default: Date.now,
@@ -194,5 +245,6 @@ const Wallet = mongoose.model('Wallet', walletSchema);
 const User = mongoose.model('User', UserSchema);
 const Savings = mongoose.model('Savings', CircleSchema);
 const PersonalSavings = mongoose.model('PersonalSavings', personalsavingsSchema);
+// const LoanRequest = mongoose.model('LoanRequest', loanRequestSchema);
 
-module.exports = { Transaction, Wallet, User,Savings,PersonalSavings };
+module.exports = { Transaction, Wallet, User,Savings,PersonalSavings};

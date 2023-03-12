@@ -1,4 +1,4 @@
-const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
+const {Transaction, Wallet, User,Savings,LoanRequest} = require('./models/Schemas');
 const handleDebts = require("./CircleMenu");
 const countryCode = require("./util/countryCode");
 const { response } = require("express");
@@ -178,15 +178,12 @@ const handleMember = async (textArray, phoneNumber) => {
   
   // Validate the entered PIN
   if (level === 5 && textArray[2] === '1' && textArray[4]) {
-   
-
     const enteredPin = textArray[4];
-  
     // Retrieve the user's PIN from the database
-    const user = await User.findOne({ phoneNumber: phoneNumber });
+    const user = await User.findOne({ number: phoneNumber });
     if (user.pin === enteredPin) {
        const selectedCircleIndex = parseInt(textArray[1]) - 1;
-    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber});
     const selectedCircle = userCircles[selectedCircleIndex];
 
     const depositAmount = parseFloat(textArray[3]);
@@ -239,30 +236,94 @@ const handleMember = async (textArray, phoneNumber) => {
     }
   }
   
-  
   if (level === 3 && textArray[2] === '2' ) {
-    const selectedCircleIndex = parseInt(textArray[1]) - 1;
-    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
-    const selectedCircle = userCircles[selectedCircleIndex];
-  
-    // Check if the user is in debt
-    const userDebt = selectedCircle.InDebtMembers.find(member => member.MemberPhoneNumber === phoneNumber);
-    const amount = userDebt ? userDebt.Amount : 0;
-    
-    if(userDebt){
-      response =`CON You still owe ${selectedCircle.GroupName}, the amount of ${userDebt.Amount}`;
-      return response;
-    }if(!userDebt){
       response = `CON Why do you need a loan?
                   Write a description..
                 `;
       return response;
-    }
-  } if (level === 4 && textArray[2] === '2' ) {
-        response = `CON Enter the amount you want to borrow
-         `;
+    
+  } 
+  if (level === 4 && textArray[2] === '2' ) {
+    response = `CON Enter the amount you want to borrow
+              `;
+    return response;
+  
+} 
+if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
+  const selectedCircleIndex = parseInt(textArray[1]) - 1;
+  const userCircles = await Savings.find({
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'LoanRequest.MemberPhoneNumber': phoneNumber }
+    ]
+  });
+  const selectedCircle = userCircles[selectedCircleIndex];
+
+  const loanReason = textArray[3];
+  const loanAmount = parseFloat(textArray[4]);
+
+  // Check if the loan amount is valid
+  if (isNaN(loanAmount) || loanAmount <= 0) {
+    response = `CON 
+      Invalid loan amount. Please enter a valid amount:
+      $`;
     return response;
   }
+
+  // Check if the user has an existing loan request
+ // Check if the user has an existing loan request
+// const hasExistingLoanRequest = LoanRequest.find({MemberPhoneNumber:phoneNumber});
+
+// if (hasExistingLoanRequest) {
+//   response = `CON 
+//     You already have a pending loan request. Please wait for approval before requesting another loan.
+//   `;
+//   return response;
+// }
+
+
+  // Check if the user has enough savings in the circle to request the loan
+  const totalBalance = selectedCircle.circleBalance?.reduce(
+    (sum, member) => sum + member.Balance,
+    0
+  ) ?? 0;
+  
+  if (loanAmount > totalBalance) {
+    response = `CON 
+      Insufficient savings in the circle to request a loan. Your available savings is $${totalBalance}.
+      Please enter a valid loan amount:
+      $`;
+    return response;
+  }
+
+  // Add the loan request to the circle's LoanRequests array
+  const loanRequest = {
+    MemberPhoneNumber: phoneNumber,
+    LoanReason: loanReason,
+    LoanAmount: loanAmount,
+    ApprovalVotes: [],
+    RejectionVotes: [],
+    Approved: false,
+    Rejected: false
+  };
+  selectedCircle.LoanRequest.push(loanRequest);
+  await selectedCircle.save();
+
+  // Send a notification to all circle members to vote on the loan request
+  selectedCircle.GroupMembers.forEach(member => {
+    if (member.MemberPhoneNumber !== phoneNumber) {
+      // TODO: Implement code to send a notification to each member
+    }
+  });
+
+  response = `END 
+    Your loan request has been submitted for approval. You will receive a notification when it has been approved or rejected.
+  `;
+  return response;
+}
+  
+
+ 
   
   
   
