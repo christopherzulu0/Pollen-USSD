@@ -479,13 +479,13 @@ const menu = {
 
   
     const savingsbalance = await PersonalSavings.findOne({ user: user._id });
-
+    
+    
     if(level === 1){
       response = `CON View your account balances
       
       Your wallet balance $${mybalance}
       Your savings balance $${savingsbalance.balance}
-      Your circle balance $
       `;
 
       const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
@@ -504,16 +504,18 @@ const menu = {
     });
    
       return response;
-    }if(level === 2){
-      const selectedCircleIndex = parseInt(textArray[2]) - 1;
-    const userCircles = await Savings.find({ 'circleBalance.MemberPhoneNumber': phoneNumber });
-    const selectedCircle = userCircles[selectedCircleIndex];
-
-   let circle = Savings.find({ 'circleBalance.MemberPhoneNumber': phoneNumber });
-   console.log(circle)
-    response = `END Your circle balance is:$${circle.Balance}\n`;
+    }if (level === 2) {
+      const selectedCircleIndex = parseInt(textArray[1]) - 1;
+      const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+      const selectedCircle = userCircles[selectedCircleIndex];
     
+       //Get the balance for the selectedCircle
+      const circleBalance =selectedCircle ? selectedCircle.circleBalance[0].Balance : 0;
+    
+      response = `END Your circle balance is:${circleBalance}\n`;
+      return response;
     }
+   
   },
 };
 
