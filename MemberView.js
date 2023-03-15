@@ -83,6 +83,30 @@ const handleMember = async (textArray, phoneNumber) => {
     response += `Deposit goal: ${selectedCircle.DepositGoal}\n`;
     response += `Penalty: ${selectedCircle.Penalty}\n`;
   
+
+ 
+// Check if the user has already voted
+if (selectedCircle.LoanRequest) {
+  // Check if the user has already voted
+  const hasVoted = selectedCircle.LoanRequest.some(request => 
+    request.ApprovalVotes.includes(phoneNumber) || request.RejectionVotes.includes(phoneNumber)
+  );
+  if (!hasVoted) {
+    response = `CON 
+      ${selectedCircle.GroupName}
+      1. Approve Request
+      2. Reject Request
+    `;
+    return response;
+  } else {
+    // If the user has already voted, return a message to inform them
+    response = `END You have already voted on this loan request.`;
+    return response;
+  }
+} else {
+  console.log('No loan requests found.');
+}
+
     // Check if the user is in debt
     const userDebt = selectedCircle.InDebtMembers.find(member => member.MemberPhoneNumber === phoneNumber);
     const amount = userDebt ? userDebt.Amount : 0;
@@ -320,6 +344,62 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
     Your loan request has been submitted for approval. You will receive a notification when it has been approved or rejected.
   `;
   return response;
+}if(level == 2 && textArray[0]==1){
+  const selectedCircleIndex = parseInt(textArray[1]) - 1;
+  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const selectedCircle = userCircles[selectedCircleIndex];
+
+  selectedCircle.LoanRequest.forEach(request => {
+    if (request.ApprovalVotes.includes(phoneNumber)) {
+      // If the user has already approved the request, return a message to inform them
+      response = `END You have already approved this loan request.`;
+      return response;
+    }
+    if (request.RejectionVotes.includes(phoneNumber)) {
+      // If the user has already rejected the request, return a message to inform them
+      response = `END You have already rejected this loan request.`;
+      return response;
+    }
+    // Push the user's approval vote and check if the loan request has been approved
+    request.ApprovalVotes.push(phoneNumber);
+    if (request.ApprovalVotes.length >= selectedCircle.GroupMembers.length - 1) {
+      request.Approved = true;
+      // Update the circle balance to reflect the loan payout
+      selectedCircle.circleBalance.forEach(member => {
+        if (member.MemberPhoneNumber === request.MemberPhoneNumber.toString()) {
+          member.Balance += request.LoanAmount;
+        }
+      });
+    }
+    response = `END Your approval vote has been recorded.`;
+    return response;
+  });
+}if(level == 2 && textArray[1] ==2){
+
+  const selectedCircleIndex = parseInt(textArray[1]) - 1;
+  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const selectedCircle = userCircles[selectedCircleIndex];
+
+   // Reject the loan request
+  selectedCircle.LoanRequest.forEach(request => {
+    if (request.RejectionVotes.includes(phoneNumber)) {
+      // If the user has already rejected the request, return a message to inform them
+      response = `END You have already rejected this loan request.`;
+      return response;
+    }
+    if (request.ApprovalVotes.includes(phoneNumber)) {
+      // If the user has already approved the request, return a message to inform them
+      response = `END You have already approved this loan request.`;
+      return response;
+    }
+    // Push the user's rejection vote and check if the loan request has been rejected
+    request.RejectionVotes.push(phoneNumber);
+    if (request.RejectionVotes.length >= selectedCircle.GroupMembers.length - 1) {
+      request.Rejected = true;
+    }
+    response = `END Your rejection vote has been recorded.`;
+    return response;
+  });
 }
   
 
