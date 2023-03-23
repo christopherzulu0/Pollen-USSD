@@ -166,7 +166,11 @@ const UserSchema = mongoose.Schema({
       required: false
     },
     LoanRequest: [{
-      MemberPhoneNumber: {
+      _id: {
+        type: mongoose.Types.ObjectId,
+        auto: true,
+      },
+      BorrowerNumber: {
         type: Number,
         required: true 
       },
@@ -177,6 +181,7 @@ const UserSchema = mongoose.Schema({
       LoanAmount: {
         type: Number,
         required: true,
+        default: 0
       },
       ApprovalVotes: {
         type: [String],
@@ -206,6 +211,17 @@ const UserSchema = mongoose.Schema({
         unique: true
       },
     }],
+    LoanBalance: [{
+      BorrowerNumber: {
+        type:Number,
+        required: true
+      },
+      LoanAmount: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+    }],
     InDebtMembers: [
       {
         MemberPhoneNumber: String,
@@ -216,13 +232,19 @@ const UserSchema = mongoose.Schema({
     circleBalance: [
       {
         MemberPhoneNumber: {
-          type: String,
+          type: Number,
           required: true
         },
         Balance: {
           type: Number,
           required: true,
           default: 0,
+          validate: {
+            validator: function(value) {
+              return !isNaN(value);
+            },
+            message: 'Balance must be a number'
+          },
           ref: 'Transaction'
         }
       }
