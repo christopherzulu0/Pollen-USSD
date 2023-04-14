@@ -379,15 +379,13 @@ const menu = {
     if (level == 1) {
       response = `CON Enter mobile number of the receiver:`;
       return response;
-    } else if (level == 2) {
+    } if (level == 2) {
     response = `CON Enter amount:`;
       return response;
-    } else if (level == 3) {
-   response = `Enter your PIN:`;
+    } if (level == 3) {
+   response = `CON Enter your PIN:`;
       return response;
-    } else if (level == 4) {
-      let response = "";
-  
+    } if (level == 4) {
       async function confirmDetails() {
         const userNumber = countryCode(textArray[1]);
         let user = await User.findOne({ number: userNumber });
@@ -400,15 +398,10 @@ const menu = {
         return (response = "END This user has not signed up for Pollen.Would you like to invite them to Join?You can send or request payment once they join.\n 1. Yes \n 2. No");
       } else {
         
-        async function confirmDetails() {
-          const userNumber = countryCode(textArray[1]);
-          let user = await User.findOne({ number: userNumber });
-          return user;
-        }
-    
-       
-        let receiver = await confirmDetails();
+        const userNumber = countryCode(textArray[1]);
+          const receiver = await User.findOne({ number: userNumber});
         const receiverWallets = await Wallet.findOne({ user: receiver._id });
+        // let receiverAmount = receiverWallets ? receiverWallets.balance:0;
         console.log(receiverWallets);
 
         const user = await User.findOne({ number: phoneNumber });

@@ -1,0 +1,11 @@
+Registration
+= Message sending to the wrong number
+
+ SendMoney
+= Apply charges
+= Allow to send money to ther user , even if the wallet is empty
+= Show available wallet balance
+= send an sms to both sender and receiver
+= Two factor authentication
+
+

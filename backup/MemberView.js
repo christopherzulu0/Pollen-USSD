@@ -126,7 +126,13 @@ if (selectedCircle.LoanRequest.length > 0) {
       await selectedCircle.save();
       response = `END Loan request has been rejected by a majority of group members.`;
       return response;
-    }
+    } 
+    //else if (totalRejectionVotes === totalApprovalVotes) {
+    //   loanRequest.Status = 'Pending Admin Approval';
+    //   await selectedCircle.save();
+    //   response = `END Loan request is pending admin approval.`;
+    //   return response;
+    // }
      else {
       loanRequest.Status = 'Pending';
       await selectedCircle.save();
@@ -156,22 +162,19 @@ if (selectedCircle.LoanRequest.length > 0) {
       `;
       return response;
     } else {
-      const selectedCircleIndex = parseInt(textArray[1]) - 1;
-const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
-const selected = userCircles[selectedCircleIndex];
-
-// Push user to InDebtMembers with an initial debt amount of 0
-const circleBalances = Object.values(selected.circleBalance);
-const totalBalance = circleBalances.reduce((sum, member) => sum + member.Balance,0);
-
-
-response = `CON 
-  ${selected.GroupName} - $ ${totalBalance}
-  1. Deposit Fund
-  2. Request Loan
-  3. Balances
-  4. Other Actions 
-`;
+      // Push user to InDebtMembers with an initial debt amount of 0
+      const totalBalance = selectedCircle.circleBalance?.reduce(
+        (sum, member) => sum + member.Balance,
+        0
+      ) ?? 0;
+      response = `CON 
+        ${selectedCircle.GroupName} - $ ${totalBalance}
+        1. Deposit Fund
+        2. Request Loan
+        3. Balances
+        4. Other Actions 
+      `;
+      return response;
     }
     
     
@@ -247,88 +250,64 @@ response = `CON
   }
   
     // Validate the entered PIN
-    if (level === 5 && textArray[2] === '1' && textArray[4]) {
-      const enteredPin = textArray[4];
-      // Retrieve the user's PIN from the database
-      const user = await User.findOne({ number: phoneNumber });
-      
-      if (user.pin === enteredPin) {
-        const selectedCircleIndex = parseInt(textArray[1]) - 1;
-        const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber});
-        const selectedCircle = userCircles[selectedCircleIndex];
+  if (level === 5 && textArray[2] === '1' && textArray[4]) {
+    const enteredPin = textArray[4];
+    // Retrieve the user's PIN from the database
+    const user = await User.findOne({ number: phoneNumber });
+    if (user.pin === enteredPin) {
+       const selectedCircleIndex = parseInt(textArray[1]) - 1;
+    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber});
+    const selectedCircle = userCircles[selectedCircleIndex];
 
-
-        const depositAmount = parseFloat(textArray[3]);
-      
+    const depositAmount = parseFloat(textArray[3]);
+  
         const userWallet = await Wallet.findOne({ user: user._id });
-        // Update the user's wallet and circle balance with the deposit amount
-        userWallet.balance -= depositAmount;
-    
-        // Create a new transaction object
-        const transaction = new Transaction({
-          sender: user._id,
-          receiver: selectedCircle._id,
-          amount: depositAmount,
-        });
-      
-        // Add the transaction to the user's transaction array
-        userWallet.transactions.push(transaction);
-    
-       
-        
-        // Find the existing member object in circleBalance and update the balance
-        const num = user.number;
-        const memberIndex = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === num);
-        console.log(memberIndex.MemberPhoneNumber)
-        if (memberIndex === -1) {
-          // Add new member to the circle
-         
+      // Update the user's wallet and circle balance with the deposit amount
+      userWallet.balance -= depositAmount;
+       // Create a new transaction object
+    const transaction = new Transaction({
+      sender: user._id,
+      receiver: selectedCircle._id,
+      amount: depositAmount,
+    });
+  
+    // Add the transaction to the user's transaction array
+    userWallet.transactions.push(transaction);
 
-          selectedCircle.MemberContribution.push({
-            MemberPhoneNumber: phoneNumber,
-            Contributed: depositAmount,
-            FirstName: user.FirstName
-          });
-        } else {
-          // Update the existing member balance if it is not 0
-          selectedCircle.MemberContribution[memberIndex].Contributed += depositAmount;
-        }
-        
-
-        const id = selectedCircle.circleBalance.find((member)=>member._id === member._id)
-        const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === id);
-        if (memberIndex2 === -1) {
-          // Add new member to the circle
-          selectedCircle.circleBalance.push({
-            Balance: depositAmount
-          });
-        } else {
-          // Update the existing member balance if it is not 0
-          selectedCircle.circleBalance[memberIndex2].Balance += depositAmount;
-        }
-
-
-
-        // Save the updated wallet and circle balance
-        await userWallet.save();
-        await selectedCircle.save();
-      
-        // Display success message to the user
-        response = `END 
-          Your Deposit of $${depositAmount} was successful to ${selectedCircle.GroupName}. Your new balance in ${selectedCircle.GroupName}.
-          You will receive an sms if we encounter any issues.
-        `;
-      
-        return response;
-      } else {
-        // Display error message to the user
-        response = `END 
-          Invalid PIN. Please try again.
-        `;
-        return response;
-      }
+        if (!Array.isArray(selectedCircle.circleBalance)) {
+      // Initialize CircleBalance as an empty array
+      selectedCircle.circleBalance = [];
     }
-    
+     const memberIndex = selectedCircle.circleBalance.findIndex((member) => member.MemberPhoneNumber === phoneNumber);
+      if (memberIndex === -1) {
+      // Add new member to the circle
+      selectedCircle.circleBalance.push({
+        MemberPhoneNumber: phoneNumber,
+        Balance: depositAmount,
+      });
+    } else {
+      // Update the existing member balance
+      selectedCircle.circleBalance[memberIndex].Balance += depositAmount;
+    }
+      // Save the updated wallet and circle balance
+      await userWallet.save();
+      await selectedCircle.save();
+  
+      // Display success message to the user
+      response = `END 
+        Your Deposit of $${depositAmount} was successful to ${selectedCircle.GroupName}. Your new balance in ${selectedCircle.GroupName}.
+         You will receive an sms if we encounter any issues.
+        `;
+  
+      return response;
+    } else {
+      // Display error message to the user
+      response = `END 
+        Invalid PIN. Please try again.
+        `;
+      return response;
+    }
+  }
   
   if (level === 3 && textArray[2] === '2' ) {
       response = `CON Why do you need a loan?
@@ -548,27 +527,16 @@ if (level === 3 && textArray[2] == 'b' ) {
   }
 }
 
-if(level === 3 && textArray[2] === '3'){
-  const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
-  const selected = userCircles[selectedCircleIndex];
 
-  let response = `CON 
-                 Deposit History for ${selected.GroupName}
-                  `;
-
-  // Loop through MemberContribution array and concatenate each member's details
-  for (let i = 0; i < selected.MemberContribution.length; i++) {
-    const member = selected.MemberContribution[i];
-    response += `${member.FirstName}: K${member.Contributed}\n`;
-  }
-
-  return response;
-}
 
  
   
+  
 
+  
+  
+  
+  
 
   // Handle join circle and create circle options here
   // ...

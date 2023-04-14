@@ -1,16 +1,66 @@
-const User = require("./models/user");
-const Circle = require("./models/circle");
+const {Transaction, Wallet, User,Savings,PersonalSavings} = require('./models/Schemas');
+const axios = require("axios");
 const countryCode = require("./util/countryCode");
 const bcrypt = require("bcrypt");
-const { response } = require("express");
+const qs = require("qs");
+const { response } = require('express');
 
-const mongoose = require("mongoose");
 
 
-mongoose.connect("mongodb+srv://pollen:87064465@cluster0.7brxwgz.mongodb.net/?retryWrites=true&w=majority", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const sendSMS = async (phoneNumber, message) => {
+  const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
+  const USERNAME = "sandbox";
+  const SMS_URL = `https://api.sandbox.africastalking.com/version1/messaging`;
+
+  try {
+    const response = await axios.post(SMS_URL, qs.stringify({
+      to: phoneNumber,
+      message: message,
+      apiKey: API_KEY,
+      username: USERNAME,
+    }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        apiKey: API_KEY,
+        username: USERNAME,
+      }
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const credentials = {
+  apiKey: process.env.apiKey,
+  username: process.env.username
+};
+
+const sendSMS2 = async (phoneNumber, message) => {
+  const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
+  const USERNAME = "sandbox";
+  const SMS_URL = `https://api.sandbox.africastalking.com/version1/messaging`;
+
+  try {
+    const response = await axios.post(SMS_URL, qs.stringify({
+      to: phoneNumber,
+      message: message,
+      apiKey: API_KEY,
+      username: USERNAME,
+    }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        apiKey: API_KEY,
+        username: USERNAME,
+      }
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
 
 
 const menu = {
@@ -28,7 +78,7 @@ const menu = {
     return response;
   },
   unregisteredMenu: () => {
-    const response = `CON Welcome to Pollen. The best banking platform in Zambia.
+    const response = `CON Welcome to Pollen. The best Open Village Banking platform in Zambia.
             1. Register
             `;
 
@@ -36,239 +86,430 @@ const menu = {
   },
   Register: async (textArray, phoneNumber) => {
     const level = textArray.length;
-    if (level == 1) {
-      let response =
-        "CON You're about to create an account with Pollen.Please enter your first name:";
-      return response;
-    } else if (level == 2) {
-      response = `CON Enter your last name`;
-      return response;
-    } else if (level == 3) {
-      response = `CON Enter your email address`;
-      return response;
-    } else if (level == 4) {
-      response = `CON Enter your date of birth`;
-      return response;
-    } else if (level == 5) {
-      response = `CON Enter your nrc number`;
-      return response;
-    } else if (level == 6) {
-      let response = "CON Please choose a 5-digit PIN to secure your account:";
-      return response;
-    } else if (level == 7) {
-      let response = "CON Please confirm your PIN:";
-      return response;
-    } else if (level == 8) {
-      const pin = textArray[6];
-      const confirmPin = textArray[7];
-      // Check if the name is strictly alphabets via regex
-      if (/[^a-zA-Z]/.test(textArray[1])) {
-        return (response =
-          "END Your full name must not consist of any number or symbol. Please try again");
-      } // Check if the pin is 5 characters long and is purely numerical
-      else if (pin.toString().length != 6 && isNaN(pin)) {
-        return (response =
-          "END Your pin does not follow our guidelines. Please try again");
-      } // Check if the pin and confirmed pin is the same
-      else if (pin != confirmPin) {
-        return (response = "END Your pins do not match. Please try again");
-      } else {
-        // proceed to register user
-        let response = "";
-        async function createUser() {
-          const userData = {
-            FirstName: textArray[1],
-            LastName: textArray[2],
-            Email: textArray[3],
-            DOB: textArray[4],
-            NationalID: textArray[5],
-            number: phoneNumber,
-            pin: textArray[6],
-          };
-          // hashes the user pin and updates the userData object
-          bcrypt.hash(userData.pin, 10, (err, hash) => {
-            userData.pin = hash;
-          });
-
-          // create user and register to DB
-          let user = await User.create(userData);
-          return user;
-        }
-
-        // Assigns the created user to a variable for manipulation
-        let user = await createUser();
-        // If user creation failed
-        if (!user) {
-          response =
-            "END An unexpected error occurred... Please try again later";
-        }
-        // if user creation was successful
-        else {
-          let userName = user.FirstName;
-          response = `END Congratulations ${userName}, You've been successfully registered with Pollen.
-          Dial *384*199726# to start using our services`;
-          // Call the sendRegistrationMessage function to send the message to the user's phone number
-          // sendRegistrationMessage(phoneNumber);
-        }
-       
-        return response;
-      }
-    }
-  },
-  CircleSavings: async (textArray, phoneNumber) => {
-    const level = textArray.length;
+    let response = "";
     
-    if (level == 1) {
-      let response =
-        `CON You're about to create a Circle Group with Pollen.
-        Please enter your Group Name:`;
-      return response;
-    }else if (level == 2) {
-      let response = "CON Group code:";
-      return response;
-    } else if (level == 3) {
-      let response = "CON Please confirm your Group Code:";
-      return response;
-    } else if (level == 4) {
-      const GroupCode = textArray[2];
-      const confirmGroupCode = textArray[3];
-      // Check if the name is strictly alphabets via regex
-      if (/[^a-zA-Z]/.test(textArray[1])) {
-        return (response =
-          "END Your group name must not consist of any number or symbol. Please try again");
-      } // Check if the pin is 5 characters long and is purely numerical
-      else if (GroupCode.toString().length != 2 && isNaN(GroupCode)) {
-       response =`END Your pin does not follow our guidelines. Please try again`;
-       return response;
-      } // Check if the pin and confirmed pin is the same
-      else if (GroupCode != confirmGroupCode) {
-       response = `END Your pins do not match. Please try again`;
-        return response;
-      } else {
-        // proceed to register user
-        let response = "";
-        async function createCircle() {
-          const CircleData = {
-            GroupName: textArray[1],
-            GroupCode: textArray[2],
-            number: phoneNumber,
-          };
-          // hashes the user pin and updates the userData object
-          bcrypt.hash(CircleData.GroupCode, 10, (err, hash) => {
-            CircleData.GroupCode = hash;
-          });
+    switch (level) {
+      case 1:
+        response = "CON What is your first name";
+        break;
+      case 2:
+        response = "CON What is your last name";
+        break;
+      case 3:
+        response = "CON Enter your email address";
+        break;
+      case 4:
+        response = "CON Enter your date of birth \n E.g 26/02/2000";
+        break;
+      case 5:
+        response = "CON Enter your NRC number \n E.g 412787/53/1";
+        break;
+      case 6:
+        response = "CON Set a login pin(4 Digits)";
+        break;
+      case 7:
+        response = "CON Please confirm your PIN:";
+        break;
+      case 8:
+        response = `CON Confirm Your Details:
+                    First Name: ${textArray[1]}
+                    Last Name: ${textArray[2]}
+                    Email: ${textArray[3]}
+                    D.O.B: ${textArray[4]}
+                    NRC Number: ${textArray[5]}
+                    Pin: ${textArray[6]}
 
-          // create user and register to DB
-          let usercircle = await Circle.create(CircleData);
-          return usercircle;
+                    1.Confirm & continue
+                   `;
+        break;
+      case 9:
+        if(textArray[8] == 1){
+        const pin = textArray[6];
+        const confirmPin = textArray[7];
+        // Check if the name is strictly alphabets via regex
+        if (/[^a-zA-Z]/.test(textArray[1])) {
+          response = "END Your full name must not consist of any number or symbol. Please try again";
         }
-
-        // Assigns the created user to a variable for manipulation
-        let usercircle = await createCircle();
-        // If user creation failed
-        if (!usercircle) {
-          response =
-            "END An unexpected error occurred... Please try again later";
+        // Check if the pin is 5 characters long and is purely numerical
+        else if (pin.toString().length != 4 || isNaN(pin)) {
+          response = "END Your must be 4 digits.Please try again!";
         }
-        // if user creation was successful
-        else {
-          let GroupCode = usercircle.GroupCode;
-          response = `END You've been successfully registered with Pollen.Your groupcode is ${GroupCode}
+        // Check if the pin and confirmed pin is the same
+        else if (pin != confirmPin) {
+          response = "END Your pin does not match. Please try again";
+        } else {
+          // proceed to register user
+          async function createUser() {
+            const userData = {
+              FirstName: textArray[1],
+              LastName: textArray[2],
+              Email: textArray[3],
+              DOB: textArray[4],
+              NationalID: textArray[5],
+              number: phoneNumber,
+              pin: textArray[6],
+            };
+    
+            // hashes the user pin and updates the userData object
+            bcrypt.hash(userData.pin, 10, (err, hash) => {
+              userData.pin = hash;
+            });
+    
+            // create user and register to DB
+            let user = await User.create(userData);
 
-          Dial *384*199726# to start using our services`;
-          
+             // create savings account for user
+            let savingsAccount = await PersonalSavings.create({
+              user: user._id,
+              balance: 0
+            });
+
+            // update user with savings account
+            user.savingsAccount = savingsAccount._id;
+            user.save();
+
+            return user;
+          }
+    
+          // Assigns the created user to a variable for manipulation
+          let user = await createUser();
+          // If user creation failed
+          if (!user) {
+            response = "END An unexpected error occurred... Please try again later";
+          }
+          // if user creation was successful
+          else {
+            let userName = user.FirstName;
+            let phoneNumber = user.number;
+            
+        // Call the sendSMS function after successful registration
+            sendSMS2(phoneNumber, "Congratulations! You have successfully registered with Pollen.");
+            response = `END Congratulations ${userName}, You've been successfully registered with Pollen. Dial *384*199726# to start using our services`;
+          }
         }
-
-        return response;
-      }
+        }
+        break;
+      default:
+        break;
     }
-  },
-  WithSavings: async (textArray) => {
+    return response;
+  }
+  ,
   
 
+  PersonalSavings: async (textArray, phoneNumber) => {
     const level = textArray.length;
-    if(level==1){
-      let response="";
-    response = `CON Earn interest in your digital Dollars via Defi.
-                    Current interest rate:
-                    [APY]%
-                    Your wallet balance:$_______________
-                    Your savings balance:$______________
-
-                1. Deposit to savings
-                2. Withdraw from Savings
-                `;
-                return response;
-
-                
+    let response = "";
+    
+    const user = await User.findOne({ number: phoneNumber });
+    const bal = await Wallet.findOne({ user: user._id });
+    const mybalance = bal ? bal.balance : 0;
+  
+    const savingsbalance = await PersonalSavings.findOne({ user: user._id });
+  
+    switch (level) {
+      case 1:
+        response = `CON Earn interest on your digital Dollars via Defi, current interest rate:
+                    [APY]% 
+                    Your wallet balance: $${mybalance}
+                    Your savings balance: $${savingsbalance.balance}
+  
+                    1. Deposit to savings
+                    2. Withdraw from savings
+                    `;
+        break;
+      case 2:
+        if (textArray[1] == 1) {
+          response = `CON Enter an amount to deposit to savings.
+                      Available wallet balance:
+                      $${mybalance}
+          `;
+        } else if (textArray[1] == 2) {
+          response = `CON Enter an amount to withdraw from savings.
+                       Available savings balance: $${savingsbalance.balance}
+                       `;
+        }
+        break;
+      case 3:
+        let amount = textArray[2];
+  
+        if (textArray[1] == 1) {
+          if (amount > bal.balance) {
+            response = `END You have insufficient balance`;
+            return response;
+          } else {
+            response = `CON Enter your pin to deposit $${amount} into savings.
+                        `;
+          }
+        } else if (textArray[1] == 2) {
+          if (amount > savingsbalance.balance) {
+            response = `END You have insufficient savings balance`;
+            return response;
+          } else {
+            response = `CON Enter your pin to withdraw $${amount} from savings.
+                        `;
+          }
+        }
+        break;
+      case 4:
+        const pin = textArray[3];
+        const user = await User.findOne({ number: phoneNumber });
+  
+        if (pin != user.pin) {
+          response = `END Incorrect PIN. Please try again.`;
+          return response;
+        } else {
+          let amount = textArray[2];
+          if (textArray[1] == 1) {
+            // Deduct amount from wallet balance
+            bal.balance -= amount;
+            // Add amount to savings balance
+            savingsbalance.balance = Number(savingsbalance.balance) + Number(amount);
+            await savingsbalance.save();
+            await bal.save();
+            response = `END Successfully deposited $${amount} to your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+          } else if (textArray[1] == 2) {
+            // Deduct amount from savings balance
+            savingsbalance.balance -= amount;
+            // Add amount to wallet balance
+            bal.balance = Number(bal.balance) + Number(amount);
+            await savingsbalance.save();
+            await bal.save();
+            response = `END Successfully withdrew $${amount} from your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+          }
+          return response;
+        }
+      default:
+        break;
     }
+  
+    return response;
+}
 
-   
-   
-  },
-  CheckBalance: async (textArray) => {
-    let response = "END This balance checking will be available soon...";
+  ,
+  WithdrawMoney: async (textArray, phoneNumber) => {
+    const level = textArray.length;
+    let response = '';
+    let amount = 0;
+    let user = null;
+    
+    switch (level) {
+      case 1:
+        response = `CON Select an action. Deposits are converted to digital US Dollar stablecoins.
+                  1. Deposit from MoMo
+                  2. Withdraw from Momo
+                   `;
+        break;
+      case 2:
+        if (textArray[1] == 1) {
+          response = `CON Enter amount to deposit:`;
+        } else if (textArray[1] == 2) {
+          response = `CON Enter amount to withdraw:`;
+        } else {
+          response = "END Invalid entry.";
+        }
+        break;
+      case 3:
+        amount = parseFloat(textArray[2]);
+        if (isNaN(amount) || amount <= 0) {
+          response = "END Invalid amount. Please enter a valid amount.";
+          break;
+        }
+  
+        user = await User.findOne({ number: phoneNumber });
+       
+        if (!user) {
+          response = "END User not found.";
+          break;
+        }
+        let wallet = await Wallet.findOne({ user: user._id });
+        if (!wallet) {
+          wallet = new Wallet({ user: user._id, balance: 0 });
+          await wallet.save();
+        }
+        if (textArray[1] == 1) {
+          wallet.balance += amount;
+          await wallet.save();
+          response = `END K${amount} has been added to your wallet. Your new balance is K${wallet.balance}.`;
+        } else if (textArray[1] == 2) {
+          response = `CON Enter your PIN:`;
+        } else {
+          response = "END Invalid entry.";
+        }
+        break;
+      case 4:
+        amount = parseFloat(textArray[2]);
+        const pin = textArray[3];
+        if (isNaN(amount) || amount <= 0) {
+          response = "END Invalid amount. Please enter a valid amount.";
+          break;
+        }
+        user = await User.findOne({ number: phoneNumber });
+  
+        if (!user) {
+          response = "END User not found.";
+          break;
+        }
+        if ( pin !==  user.pin) {
+          response = "END Invalid PIN.";
+          break;
+        }
+        let walletWithdraw = await Wallet.findOne({ user: user._id });
+        if (!walletWithdraw) {
+          response = "END Insufficient balance.";
+          break;
+        }
+        if (walletWithdraw.balance < amount) {
+          response = "END Insufficient balance.";
+          break;
+        }
+        walletWithdraw.balance -= amount;
+        await walletWithdraw.save();
+        response = `END K${amount} has been withdrawn from your wallet. Your new balance is K${walletWithdraw.balance}.`;
+        break;
+      default:
+        response = "END Invalid entry.";
+        break;
+    }
     return response;
   },
-  SendMoney: async (textArray, phoneNumber) => {
+  SendMoney: async (textArray, phoneNumber) => { 
     const level = textArray.length;
+    let response= "";
     if (level == 1) {
-      return (response = "CON Enter mobile number of the receiver:");
-    } else if (level == 2) {
-      return (response = "CON Enter amount:");
-    } else if (level == 3) {
-      return (response = "CON Enter your PIN:");
-    } else if (level == 4) {
-      let response = "";
-
-      // Checks DB for the receivers details and returns the value
+      response = `CON Enter mobile number of the receiver:`;
+      return response;
+    } if (level == 2) {
+    response = `CON Enter amount:`;
+      return response;
+    } if (level == 3) {
+   response = `CON Enter your PIN:`;
+      return response;
+    } if (level == 4) {
       async function confirmDetails() {
         const userNumber = countryCode(textArray[1]);
         let user = await User.findOne({ number: userNumber });
         return user;
       }
-
-      // Assigns the user to a variable for manipulation
-      let user = await confirmDetails();
-      // If user was not found in the DB
-      if (!user ) {
+  
+     
+      let receiver = await confirmDetails();
+      if (!receiver) {
         return (response = "END This user has not signed up for Pollen.Would you like to invite them to Join?You can send or request payment once they join.\n 1. Yes \n 2. No");
-      }
-      // if user was found and details were retrieved 0962591106
-      else {
-        let userName = user.FirstName;
-        response = `CON You're about to send K ${textArray[2]} to ${userName}
-      1. Confirm
-      2. Cancel `;
-      }
+      } else {
+        
+        const userNumber = countryCode(textArray[1]);
+          const receiver = await User.findOne({ number: userNumber});
+        const receiverWallets = await Wallet.findOne({ user: receiver._id });
+        // let receiverAmount = receiverWallets ? receiverWallets.balance:0;
+        console.log(receiverWallets);
 
+        const user = await User.findOne({ number: phoneNumber });
+        const sender = await Wallet.findOne({ user: user._id });
+        console.log(sender);
+
+        let senderName = user.FirstName;
+        let receiverName = receiver.FirstName;
+        let amount = parseInt(textArray[2]);
+        const senderWallet = sender.balance;
+        let senderPin = user.pin;
+  
+        // validate the pin
+        if (textArray[3] != senderPin) {
+          return (response = "END Invalid Pin. Transaction cancelled.");
+        }
+  
+        // check if sender has enough funds
+        if (amount > senderWallet) {
+          return (response = "END Insufficient funds. Transaction cancelled.");
+        }
+  
+        // deduct from sender's balance and add to receiver's balance
+        sender.balance -= amount;
+        receiverWallets.balance += amount;
+  
+        sender.balance = sender.balance;
+       receiverWallets.balance =  receiverWallets.balance;
+  
+        await sender.save();
+        await receiverWallets.save();
+  
+        // create transaction records
+        let senderTransaction = new Transaction({
+          type: "debit",
+          amount: amount,
+          balance: sender.balance,
+          user: sender._id,
+          description: `Sent K${amount} to ${senderName}`
+        });
+        let receiverTransaction = new Transaction({
+          type: "credit",
+          amount: amount,
+          balance: receiverWallets.balance,
+          user: receiver._id,
+          description: `Received K${amount} from ${receiverName}`
+        });
+        await senderTransaction.save();
+        await receiverTransaction.save();
+  
+        response = `END Your payment of K${amount} to ${receiverName} has been submitted.\nYou will receive an SMS notification once it is complete.`;
+      }
+  
       return response;
-    } else if (level == 5 && textArray[4] == 1) {
-      // TODO check if PIN is correct
-      // TODO send the money
-      // TODO If the account has enough funds including charges etc..
-      // TODO connect to DB
-      // TODO Complete transaction
-      pin = textArray[3];
-      amount = textArray[2];
-
-      return (response =
-        "END We are processing your request. You will receive an SMS shortly");
     } else if (level == 5 && textArray[4] == 2) {
-      //Cancel Transaction
-      return (response = "END Canceled. Thank you for using our service");
+      return (response = "END Cancelled. Thank you for using our service");
     } else {
       return (response = "END Invalid entry");
     }
+  },  
+  CheckBalance: async (textArray,phoneNumber) => {
+    let response = "";
+    const level = textArray.length;
+
+    const user = await User.findOne({ number: phoneNumber });
+    const bal = await Wallet.findOne({ user: user._id });
+    const mybalance = bal ?  bal.balance : 0;
+
+  
+    const savingsbalance = await PersonalSavings.findOne({ user: user._id });
+    
+    
+    if(level === 1){
+      response = `CON View your account balances
+      
+      Your wallet balance $${mybalance}
+      Your savings balance $${savingsbalance.balance}
+      `;
+
+      const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+
+    if (!userCircles.length) {
+      response = `CON 
+      You don't belong to any circle.
+      `;
+      return response;
+    }
+
+    response += `
+    Select a circle to view balance :\n`;
+    userCircles.forEach((circle, index) => {
+      response += `${index + 1}. ${circle.GroupName}\n`;
+    });
+   
+      return response;
+    }if (level === 2) {
+      const selectedCircleIndex = parseInt(textArray[1]) - 1;
+      const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+      const selectedCircle = userCircles[selectedCircleIndex];
+    
+       //Get the balance for the selectedCircle
+      const circleBalance =selectedCircle ? selectedCircle.circleBalance[0].Balance : 0;
+    
+      response = `END Your circle balance is:${circleBalance}\n`;
+      return response;
+    }
+   
   },
-  // WithdrawMoney: async (textArray) => {
-  //   let response = "END This service will be available soon...";
-  //   return response;
-  // },
-  // CheckBalance: async (textArray) => {
-  //   let response = "END This service will be available soon...";
-  //   return response;
-  // },
 };
 
 module.exports = menu;

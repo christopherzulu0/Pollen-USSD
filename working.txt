@@ -1,0 +1,30 @@
+Numbers           Passwords
+0965481943        2222
+0962591106        5555
+
+0971488377        4444//Creator
+0968274920        3333 
+0977793293        6666
+
+
+
+,'GroupMembers.Creator': phoneNumber,
+'GroupMembers.AdminNumber1': phoneNumber,
+'GroupMembers.AdminNumber2': phoneNumber 
+
+
+Group code: qvJJXfV_y
+*384*199726#
+
+
+
+
+ction Items:
+
+   
+        * Show individual user balances under the “Balances” section of the circle page
+        * Add section to show individual (outstanding) loan amounts
+       * Add a “point” system for successfully meeting deposit goal each period
+   
+    
+   

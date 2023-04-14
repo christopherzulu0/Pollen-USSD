@@ -2,6 +2,37 @@ const mongoose = require('mongoose');
 const shortid = require('shortid');
 
 
+// const loanRequestSchema = new mongoose.Schema({
+//   memberPhoneNumber: {
+//     type: Number,
+//     required: true
+    
+//   },
+//   loanReason: {
+//     type: String,
+//     required: true
+//   },
+//   loanAmount: {
+//     type: Number,
+//     required: true,
+//   },
+//   approvalVotes: {
+//     type: [String],
+//     default: []
+//   },
+//   rejectionVotes: {
+//     type: [String],
+//     default: []
+//   },
+//   approved: {
+//     type: Boolean,
+//     default: false
+//   },
+//   rejected: {
+//     type: Boolean,
+//     default: false
+//   }
+// });
 
 const transactionSchema = new mongoose.Schema({
   sender: {
@@ -92,15 +123,15 @@ const UserSchema = mongoose.Schema({
    const CircleSchema = mongoose.Schema({
     Creator: {
       type: Number,
-      required: true,
+      required: false,
     },
     AdminNumber1: {
       type: Number,
-      required: true,
+      required: false,
     },
     AdminNumber2: {
       type: Number,
-      required: true,
+      required: false,
     },
     GovType: {
       type: String,
@@ -111,16 +142,28 @@ const UserSchema = mongoose.Schema({
       required: true,
     },
     DepositGoal: {
-      type: Number,
+      type: String,
       required: true,
     },
     GroupCode: {
       type: String,
       default: shortid.generate, 
     },
-    Rate: {
-      type: Number,
+    Penalty: {
+      type: String,
       required: true,
+    },
+    MultiAdmin: { 
+      type: Boolean,
+      required: false
+    },
+    VotePerson: { 
+      type: Boolean,
+      required: false
+    },
+    VoteDollar: { 
+      type: Boolean,
+      required: false
     },
     LoanRequest: [{
       _id: {
@@ -183,33 +226,30 @@ const UserSchema = mongoose.Schema({
         required: true,
         default: 0
       },
-     
     }],
-    MemberContribution: [{
-     MemberPhoneNumber: {
-        type:Number,
-        required: true,
-      },
-      Contributed: {
-        type: Number,
-        required: true,
-        default: 0
-      },
-      FirstName: {
-        type:String,
-        required: true,
-      },
-    }],
-    circleBalance:[
+    InDebtMembers: [
       {
-        _id: {
-          type: mongoose.Types.ObjectId,
-          auto: true,
+        MemberPhoneNumber: String,
+        Amount: Number,
+      },
+      // more objects for other members who are in debt
+    ],
+    circleBalance: [
+      {
+        MemberPhoneNumber: {
+          type: Number,
+          required: true
         },
         Balance: {
           type: Number,
           required: true,
           default: 0,
+          validate: {
+            validator: function(value) {
+              return !isNaN(value);
+            },
+            message: 'Balance must be a number'
+          },
           ref: 'Transaction'
         }
       }
@@ -217,22 +257,7 @@ const UserSchema = mongoose.Schema({
     GroupMembers: [{
       MemberPhoneNumber: {
         type: Number,
-        required: false,
-        unique: true
-      },
-      Creator: {
-        type: Number,
-       required: false,
-        unique: true
-      },
-      AdminNumber1: {
-        type: Number,
-       required: false,
-        unique: true
-      },
-      AdminNumber2: {
-        type: Number,
-       required: false,
+        required: true,
         unique: true
       },
       JoinedOn: {

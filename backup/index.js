@@ -1,25 +1,23 @@
 const express = require("express");
+
 const router = express.Router();
 const {
     MainMenu,
     Register,
-    CircleSavings,
-    PersonalSavings,
     SendMoney,
     WithdrawMoney,
+    PersonalSavings,
     CheckBalance,
-    unregisteredMenu,
+    unregisteredMenu
+   
   } = require("./menu");
+
+  const {CircleSavings} = require("./CircleController")
   
-  const {
-    Savings,
-  } = require("./Savings");
-  const User = require("./models/user");
+  const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
   const mongoose = require("mongoose");
   const dotenv = require("dotenv");
   const cors = require("cors");
-
-//   const Circle = require("./models/circle");
   const app = express();
 
   
@@ -45,11 +43,16 @@ const {
       console.log("MongoDB not Connected ");
     });
 
+
+
 router.post("/", (req, res) => {
-  // Read variables sent via POST from our SDK
+  
+
   const { sessionId, serviceCode, phoneNumber, text } = req.body;
 
   console.log('#', req.body);
+  
+  
   
   User.findOne({ number: phoneNumber })
     .then( async (user) => {
@@ -65,6 +68,7 @@ router.post("/", (req, res) => {
         userName = user.FirstName;
       }
 
+      
       
 
       // MAIN LOGIC
@@ -83,25 +87,27 @@ router.post("/", (req, res) => {
         }
       } else {
         const textArray = text.split("*");
+
         switch (textArray[0]) {
           case "1":
             response = await CircleSavings(textArray, phoneNumber);
             break;
           case "2": 
-              response = await Savings(textArray, phoneNumber);
+              response = await PersonalSavings(textArray, phoneNumber);
               break;
           case "3":
-              response = await CheckBalance(textArray);
+              response = await CheckBalance(textArray,phoneNumber);
               break;
           case "4":
               response = await SendMoney(textArray, phoneNumber);
               break;
           case "5":
-            response = await WithdrawMoney(textArray);
+            response = await WithdrawMoney(textArray,phoneNumber);
             break;  
           default:
             response = "END Invalid choice. Please try again";
         }
+
       }
   
   // Print the response onto the page so that our SDK can read it
@@ -109,6 +115,11 @@ router.post("/", (req, res) => {
   res.send(response);
   // DONE!!!
 })
+
+
+
+
+
 .catch((err) => {
     console.log({ err });
   });

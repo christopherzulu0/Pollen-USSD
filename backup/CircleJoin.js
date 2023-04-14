@@ -83,6 +83,44 @@ const credentials = {
   username: process.env.username
 };
 
+
+
+
+
+// Function for selecting Admin type
+const selectAdminType = () => {
+  return `CON The Government type can be 
+          1.Admin 
+          2.Multi-Admin 
+          3.1 vote per person 
+          4.1 vote per $ deposit
+        `;
+};
+
+const defaultValues = {
+  Admin: {
+    govTypeName: "Admin",
+    Admins: 1,
+    VotingType: "N/A",
+  },
+  MultiAdmin: {
+    govTypeName: "MultiAdmin",
+    Admins: 3,
+    VotingType: "N/A",
+  },
+  VotePerson: {
+    govTypeName: "1 Vote per person",
+    Admins: 1,
+    VotingType: "1 Person = 1 Vote",
+  },
+  VoteDollar: {
+    govTypeName: "1 vote per dollar",
+    Admins: 1,
+    VotingType: "1 Dollar = 1 Vote",
+  },
+};
+
+
 // Function for handling non-registered users
 const handleNonRegisteredUser = async (textArray, phoneNumber,Admin,MultiAdmin,VotePerson,VoteDollar) => {
   let response = "";
@@ -107,12 +145,10 @@ const handleNonRegisteredUser = async (textArray, phoneNumber,Admin,MultiAdmin,V
       return response;
     } else {
       response = `CON Please confirm the circle before joining.
-                  Admin1: ${group.Creator}
-                  Admin2: ${group.AdminNumber1}
-                  Admin3: ${group.AdminNumber2}
+                  GovType: ${group.GovType}
                   CircleName: ${group.GroupName}
                   Deposit goal per mo: ${group.DepositGoal}
-                  Rate: ${group.Rate}
+                  Late penalty: ${group.Penalty}
                   
                   0.Confirm & Join
                   x. Cancel
@@ -197,56 +233,123 @@ const handleNonRegisteredUser = async (textArray, phoneNumber,Admin,MultiAdmin,V
     return response;
   }
    if (level == 3 ) {
+    response = selectAdminType();
+    return response;
+    
+  }if(level === 4 && textArray[3] == 1 ){
+    
+    response = `CON Enter deposit goal(Admin)`;
+    return response;
+  } else if(level === 4 && textArray[3] == 2){  
     response = `CON Enter deposit goal(Multi-Admin)`;
     return response;
-  }else if(level === 4 ){
-    response = `CON Enter circle interest rate`;
+  } else if(level === 4 && textArray[3] == 3){  
+    response = `CON Enter deposit goal(1 Vote per person)`;
     return response;
-  }  else if(level === 5 ){
+  } else if(level === 4 && textArray[3] == 4){  
+    response = `CON Enter deposit goal(1 Vote per Dollar )`;
+    return response;
+  } else if(level === 5 ){
+    response = `CON Enter penalty fee`;
+    return response;
+  }  else if(level === 6 ){
     response = `CON Enter Admin#1 number(E.g 260971488377)`;
     return response;
-  }else if(level === 6) {
+  }else if(level === 7) {
     response = `CON Add Admin#2 number(E.g 260971488377)`;
     return response;
-}else if(level === 7){
+}else if(level === 8){
+    const govType = textArray[3];
+    let defaults;
+
+    if (govType == 1) {
+      defaults = defaultValues.Admin;
+    } else if (govType == 2) {
+      defaults = defaultValues.MultiAdmin;
+    } else if (govType == 3) {
+      defaults = defaultValues.VotePerson;
+    } else if (govType == 4) {
+      defaults = defaultValues.VoteDollar;
+    } else {
+      // handle invalid government type
+      response = `END Invalid government type`;
+      return response;
+    }
     response = `CON Verify info before continuing
-                 Admin1: ${phoneNumber}
-                 Admin2: ${textArray[5]}
-                 Admin3: ${textArray[6]}
-                 Circle Name: ${textArray[2]}
-                 Deposit Goal: K${textArray[3]}
-                 Interest Rate: ${textArray[4]}%
+                 Gov Type = ${defaults.govTypeName}
+                 Admins = ${defaults.Admins}
+                 Circle Name = ${textArray[2]}
+                 Deposit Goal = ${textArray[4]}
+                 Late Penalty = ${textArray[5]}
 
                  1.Confirm & Finish making a circle
                  2. Redo
                  `;
     return response;
   }
-
   
-  if(level == 8 && textArray[7] == 1){
+  // if(level == 9 && textArray[8] == 2){
+  //   if (level == 2 && textArray[1] == 2) {
+  //     response = `CON Enter circle name`;
+  //     return response;
+  //   }
+  // }
+  
+  if(level == 9 && textArray[8] == 1){
     // proceed to register user
     const groupCode = shortid.generate(); // generate a unique invite code
+    const govType = textArray[3];
     let savingsData;
   
-    const groupMembers = [
-      { Creator: phoneNumber, JoinedOn: new Date() },
-      { AdminNumber1: textArray[5], JoinedOn: new Date() },
-      { AdminNumber2: textArray[6], JoinedOn: new Date() }
-    ];
-    
-    // Join the group
+    if (govType == 1) {
       savingsData = {
         Creator:phoneNumber,
-        AdminNumber1:textArray[5],
-        AdminNumber2: textArray[6],
+        AdminNumber1:textArray[6],
+        AdminNumber2: textArray[7],
+        GovType: "Admin",
+        GroupName: textArray[2],
+        DepositGoal: textArray[4],
+        GroupCode: groupCode,
+        Penalty: textArray[5],
+      };
+    } else if (govType == 2) {
+      savingsData = {
+        Creator:phoneNumber,
+        AdminNumber1:textArray[6],
+        AdminNumber2: textArray[7],
         GovType: "Multi-Admin",
         GroupName: textArray[2],
-        DepositGoal: textArray[3],
+        DepositGoal: textArray[4],
         GroupCode: groupCode,
-        Rate: textArray[4],
-        GroupMembers: groupMembers
+        Penalty: textArray[5],
       };
+  
+    } else if (govType == 3) {
+      savingsData = {
+        Creator:phoneNumber,
+        AdminNumber1:textArray[6],
+        AdminNumber2: textArray[7],
+        GovType: "1 Vote Per Person",
+        GroupName: textArray[2],
+        DepositGoal: textArray[4],
+        GroupCode: groupCode,
+        Penalty: textArray[5],
+      };
+    } else if (govType == 4) {
+      savingsData = {
+        Creator:phoneNumber,
+        AdminNumber1:textArray[6],
+        AdminNumber2: textArray[7],
+        GovType: "1 Vote Person Per $",
+        GroupName: textArray[2],
+        DepositGoal: textArray[4],
+        GroupCode: groupCode,
+        Penalty: textArray[5],
+      };
+    } else {
+      // handle invalid government type
+      return 'END Invalid government type.';
+    }
   
     // create group
     const newGroup = new Savings(savingsData);

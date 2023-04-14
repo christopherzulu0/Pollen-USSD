@@ -39,251 +39,307 @@ const credentials = {
 
 
 const handleAdmin = async (textArray, phoneNumber) => {
-  // Implement logic for registered users
-  // Checks DB for the receivers details and returns the value
-
-  //Member View
-  // async function confirmDetails() {
-  //   let member = await Savings.findOne({"GroupMembers.MemberPhoneNumber": phoneNumber});
-  //   return member;
-  // }
-
-  // // Assigns the user to a variable for manipulation
-  // let member = await confirmDetails();
-
-  // if (member) {
-  //   return handleMember(textArray, phoneNumber);
-  // } else {
-  //   response =`END You are not authorised to view this page `
-  //   ;
-
-  //   return response;
-  // }
-
-
   async function confirmDetails() {
     let user = await User.findOne({ number: phoneNumber });
     return user;
   }
-
   
   // Assigns the user to a variable for manipulation
   let user = await confirmDetails();
-  
     let response = "";
-   
     const level = textArray.length;
-  
-    if (level == 1) {
-      let firstName = user.FirstName;
-      response = `CON Welcome, ${firstName}!
-      1. Invite Members`;
-      return response;
-    } else if (level == 2 && textArray[1] == 1) {
-      response = `CON Enter the number you want to invite to the circle`;
-      return response;
-    } else if (level == 3) {
-      const userNumber = countryCode(textArray[2]);
-      let user = await User.findOne({ number: userNumber });
-      if (user) {
-        let circleMember = textArray[2];
-        response = `CON ${circleMember}, has been invited to join your circle.
-                    1. Add to invite list`;
 
-                    async function confirmDetails() {
-                      let user = await Savings.findOne({ number: phoneNumber });
-                      return user;
-                    }
+    if(level === 1){
+      response = `CON Choose an option
+                 1. Invite Members
+                 2. Pending Votes
+                 3. Loan Balances
+                 4. Group Members
+                `;
+      return response;
+    }
+    // if (level == 2 && textArray[1] == 1) {
+    //   response = `CON Enter the number you want to invite to the circle`;
+    //   return response;
+    // } else if (level == 3) {
+    //   const userNumber = countryCode(textArray[2]);
+    //   let user = await User.findOne({ number: userNumber });
+    //   if (user) {
+    //     let circleMember = textArray[2];
+    //     response = `CON ${circleMember}, has been invited to join your circle.
+    //                 1. Add to invite list`;
+
+    //                 async function confirmDetails() {
+    //                   let user = await Savings.findOne({ number: phoneNumber });
+    //                   return user;
+    //                 }
                 
-                    // Assigns the user to a variable for manipulation
-                    let user = await confirmDetails();
+    //                 // Assigns the user to a variable for manipulation
+    //                 let user = await confirmDetails();
                 
                  
             
-      } else {
-        let circleMember = textArray[2];
-        response = `CON ${circleMember}, has been invited to Pollen and join your circle.
-                    1. Add to invite list`;
+    //   } else {
+    //     let circleMember = textArray[2];
+    //     response = `CON ${circleMember}, has been invited to Pollen and join your circle.
+    //                 1. Add to invite list`;
 
-                    async function confirmDetails() {
-                      let user = await Savings.findOne({ number: phoneNumber });
-                      return user;
-                    }
+    //                 async function confirmDetails() {
+    //                   let user = await Savings.findOne({ number: phoneNumber });
+    //                   return user;
+    //                 }
                 
-                    // Assigns the user to a variable for manipulation
-                    let user = await confirmDetails();
+    //                 // Assigns the user to a variable for manipulation
+    //                 let user = await confirmDetails();
                 
-                    let code = user.GroupCode;
+    //                 let code = user.GroupCode;
                    
-        await Savings.findOneAndUpdate(
-          { GroupCode: code },
-          { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
-          { new: true, upsert: true }
-        );
-      }
-      return response;
-    } else if (level == 4 && textArray[3] == 1) {
-      let user = await Savings.findOne({ number: phoneNumber });
-      let code = user.GroupCode;
-      let name = user.GroupName;
-      await Savings.findOneAndUpdate(
-        { GroupCode: code },
-        { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
-        { new: true, upsert: true }
-      );
+    //     await Savings.findOneAndUpdate(
+    //       { GroupCode: code },
+    //       { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
+    //       { new: true, upsert: true }
+    //     );
+    //   }
+    //   return response;
+    // } else if (level == 4 && textArray[3] == 1) {
+    //   let user = await Savings.findOne({ number: phoneNumber });
+    //   let code = user.GroupCode;
+    //   let name = user.GroupName;
+    //   await Savings.findOneAndUpdate(
+    //     { GroupCode: code },
+    //     { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
+    //     { new: true, upsert: true }
+    //   );
 
 
      
-      response = `CON ${textArray[2]}, has been invited to join ${name} and added to the invite list`;
-      return response;
-    }
+    //   response = `CON ${textArray[2]}, has been invited to join ${name} and added to the invite list`;
+    //   return response;
+    // }
     
-
-         
-        
-        // if(level == 2 && textArray[1] == 1){
-        //   response = `CON Enter Your Name`;
-        //   return response;
-        // }if(level == 3){
-        //   response = `CON Enter the name of your province`;
-        //   return response;
-        // }if(level == 4){
-        //   response = `CON Enter the invite code for the group you want to join`;
-        //   return response;
-        // }if(level == 5){
-        //   // Find the group with the invite code
-        //   let group = await Savings.findOne({ InviteCode: textArray[4]});
-        //   if (!group) {
-        //     response = "END Group not found. Please check the invite code and try again.";
-        //     return response;
-        //   }else if(group){
-        //     response = `CON Please confirm the circle before joining.
-        //                 GovType: ${group.GovType}
-        //                 CircleName: ${group.GroupName}
-        //                 Deposit goal per mo: ${group.DepositGoal}
-        //                 Late penalty: ${group.Penalty}
-                        
-        //                 1.Confirm & Join
-        //                 2.Cancel
-        //     `;
-        //     return response;
-        //   }
-        // }if (level == 6 && textArray[5] == 1) {
-        //   // Check if the user is already in a circle and not in the current GroupMembers
-        //   const memberInCircle = await Savings.findOne({
-        //     AdminNumber: phoneNumber,
-        //     "GroupMembers.GroupCode": { $ne: textArray[4] },
-        //   });
-        
-        //   // Check if the user is already a member of the group
-        //   const member = await Savings.findOne({
-        //     "GroupMembers.MemberPhoneNumber": phoneNumber,
-        //     "GroupMembers.GroupCode": textArray[4],
-        //   });
-        
-        //   if (memberInCircle) {
-        //     response = "END You are an Admin and cannot join this group.";
-        //     return response;
-        //   } else if (member) {
-        //     response = "END You are already a member of this circle.";
-        //     return response;
-        //   }
-        
-        //   // Join the group
-        //   const group = await Savings.findOneAndUpdate(
-        //     { GroupCode: textArray[4] },
-        //     {
-        //       $push: {
-        //         GroupMembers: {
-        //           MemberName: textArray[2],
-        //           Province: textArray[3],
-        //           MemberPhoneNumber: phoneNumber,
-        //         },
-        //       },
-        //     },
-        //     { new: true }
-        //   );
-        
-        //   response = `END You have successfully joined the ${group.GroupName} group.`;
-        // }
-        
-        
-        
-        // if(level == 2 && textArray[1] == 2){
-        //   response = `CON Enter your fullname`;
-        //   return response;
-        // }if(level == 3 ){
-        //   response = `CON The Government type can be 
-        //               1.Admin 
-        //               2.Multi-Admin 
-        //               3.1 vote per person 
-        //               4.1 vote per $ deposit
-        //             `;
-        //   return response;
-        // }if(level == 4 && textArray[3] ==1 ){
-        //   response = `CON Enter group name`;
-        //   return response;
-        // }if(level == 5 ){
-        //   response = `CON Enter deposit  goal`;
-        //   return response;
-        // }if(level == 6 ){
-        //   response = `CON Enter new group Invite code `;
-        //   return response;
-        // }if(level == 7 ){
-        //   response = `CON Enter penalty fee`;
-        //   return response;
-        // }if(level == 8){
-        //   response = `CON Verfiy info before continuing
-        //                Gov Type = Admin
-        //                Admins = ${textArray[3]}
-        //                Circle Name =  ${textArray[4]}
-        //                Deposit Goal = ${textArray[5]}
-        //                Late Penalty = ${textArray[7]}
-
-        //                1.Confirm & Continue
-        //                2.Redo
-        //              `;
-        //   return response;
-        // }if(level == 9 && textArray[9] == 1 ) {
-        //   // proceed to register user
-        //   async function createGroup() {
-           
-        //     const SavingsData = {
-        //      AdminNumber: phoneNumber,
-        //      AdminName: textArray[2],
-        //      GovType: textArray[3], 
-        //      AdminNumber: textArray[4], 
-        //      GroupName: textArray[5],
-        //      DepositGoal: textArray[6],
-        //      GroupCode: textArray[7],
-        //      Penalty: textArray[8],
-        //     };
-            
     
-        //     // create user and register to DB
-        //     let Member = await Savings.create(SavingsData);
-        //     return Member;
-        //   }
-    
-        //   // Assigns the created user to a variable for manipulation
-        //   let Member = await createGroup();
-        //   // If user creation failed
-        //   if (!Member) {
-        //     response = "END An unexpected error occurred... Please try again later";
-        //   }
-        //   // if user creation was successful
-        //   else {
-        //     let owner =Member.AdminName;
-        //     let code = Member.GroupCode;
-            
-        // // Call the sendSMS function after successful registration
-        //     // sendSMS2(phoneNumber, "Congratulations! You have successfully registered with Pollen.");
-        //     response = `END Congratulations ${owner}, You have successfully registered the group. Your group invite code is ${code} .`;
-        //   }
-        // }
+  //   if(level === 2 && textArray[1] === '2'){
+  //     const circles = await Savings.find({
+  //       $or: [
+  //         { 'GroupMembers.Creator': phoneNumber },
+  //         { 'GroupMembers.AdminNumber1': phoneNumber },
+  //         { 'GroupMembers.AdminNumber2': phoneNumber }
+  //       ]
+  //     });
+      
+  //     response = `CON 
+  //   Select a circle :\n`;
+  //  circles.forEach((circle, index) => {
+  //     response += `${index + 1}. ${circle.GroupName}\n`;
+  //   });
+  //   return response;
+  //   }
+  //   if(level === 3){
+  //     const selectedCircleIndex = parseInt(textArray[2]) - 1;
+  //   const userCircles = await Savings.find({
+  //     $or: [
+  //       { 'GroupMembers.Creator': phoneNumber },
+  //       { 'GroupMembers.AdminNumber1': phoneNumber },
+  //       { 'GroupMembers.AdminNumber2': phoneNumber }
+  //     ]
+  //   });
+  //   const selectedCircle = userCircles[selectedCircleIndex];
 
+  //   if (selectedCircle.LoanRequest.length > 0) {
+  //     const loanRequest = selectedCircle.LoanRequest[0];
+  //     const totalGroupMembers = selectedCircle.GroupMembers.length;
+  //     const totalVotes = loanRequest.ApprovalVotes.length + loanRequest.RejectionVotes.length;
+    
+  //     const user = User.findOne({number:phoneNumber});
+  //     if (totalVotes < totalGroupMembers) {
+  //       const hasVoted = loanRequest.ApprovalVotes.includes(user) || loanRequest.RejectionVotes.includes(user);
+  //       if (!hasVoted) {
+  //         response = `CON 
+  //           ${selectedCircle.GroupName}
+  //           a. Approve Request
+  //           b. Reject Request
+  //         `;
+  //         return response;
+  //       } else {
+  //         // If the user has already voted, return a message to inform them
+  //         response = `END You have already voted on this loan request.`;
+  //         return response;
+  //       }
+  //     } else {
+  //       // Check if all members have voted either for approval or rejection
+  //       const totalApprovalVotes = loanRequest.ApprovalVotes.length;
+  //       const totalRejectionVotes = loanRequest.RejectionVotes.length;
+    
+  //       if (totalApprovalVotes === totalGroupMembers) {
+  //         loanRequest.Status = 'Approved';
+  //         await selectedCircle.save();
+  //         response = `END Loan request has been approved by all group members.`;
+  //         return response;
+  //       } else if (totalRejectionVotes === totalGroupMembers) {
+  //         loanRequest.Status = 'Rejected';
+  //         await selectedCircle.save();
+  //         response = `END Loan request has been rejected by all group members.`;
+  //         return response;
+  //       } else if (totalRejectionVotes > totalApprovalVotes) {
+  //         loanRequest.Status = 'Rejected';
+  //         await selectedCircle.save();
+  //         response = `END Loan request has been rejected by a majority of group members.`;
+  //         return response;
+  //       }
+  //        else {
+  //         loanRequest.Status = 'Pending';
+  //         await selectedCircle.save();
+  //         response = `END Loan request is pending group members' votes.`;
+  //         return response;
+  //       }
+  //     }
+  //   } else {
+  //     console.log('No loan requests found.');
+  //   }
+    
+  // }
 
   
+    if (level === 4 && textArray[3] == 'a' ) {
+      const selectedCircleIndex = parseInt(textArray[2]) - 1;
+      const userCircles = await Savings.find({ $or: [
+        {'GroupMembers.Creator': phoneNumber},
+        {'GroupMembers.AdminNumber1': phoneNumber},
+        {'GroupMembers.AdminNumber2': phoneNumber}
+    ]});
+      const selectedCircle = userCircles[selectedCircleIndex];
+      const loanRequest = selectedCircle.LoanRequest.find((id) => id._id === id._id);
+    
+      if (!loanRequest) {
+        response = `END Loan request not found.`;
+        return response;
+      }
+    
+      if (loanRequest.Status === 'Approved' || loanRequest.Status === 'Rejected') {
+        response = `END Loan request has already been processed.`;
+        return response;
+      }
+    
+      loanRequest.ApprovalVotes.push(phoneNumber);
+      const totalApprovalVotes = loanRequest.ApprovalVotes.length;
+      const totalRejectionVotes = loanRequest.RejectionVotes.length;
+      const totalGroupMembers = selectedCircle.GroupMembers.length;
+    
+      if (totalRejectionVotes > totalApprovalVotes) {
+        loanRequest.Status = 'Rejected';
+        await selectedCircle.save();
+        response = `END Loan request has been rejected by a majority of group members.`;
+        return response;
+      } else if (totalRejectionVotes === totalApprovalVotes) {
+        loanRequest.Status = 'Pending Admin Approval';
+        await selectedCircle.save();
+        response = `END Loan request has been neither approved nor rejected by all group members. It is now pending admin approval.`;
+        return response;
+      } else {
+        if (totalApprovalVotes > Math.floor(totalGroupMembers / 2)) {
+          loanRequest.Status = 'Approved';
+    
+          const loanAmount = loanRequest ? loanRequest.LoanAmount: 0;
+          const borrowerIndex = selectedCircle.circleBalance.findIndex(
+            (member) => member.MemberPhoneNumber === loanRequest.BorrowerNumber
+          );
+      
+          
+    
+          if (borrowerIndex === -1) {
+           
+            response = `END Error: borrower not found in circle balance.`;
+            return response;
+          }
+    
+          if (selectedCircle.circleBalance[borrowerIndex].Balance < loanAmount) {
+            response = `END Error: borrower does not have sufficient balance to repay loan.`;
+            return response;
+          }
+    
+          selectedCircle.circleBalance[borrowerIndex].Balance -= loanAmount;
+          const borrower = await Wallet.findOneAndUpdate(
+            { MemberPhoneNumber: loanRequest.BorrowerNumber },
+            { $inc: { balance: loanAmount } },
+            { new: true }
+          );
+    
+          const loanBalance = {
+            BorrowerNumber: loanRequest.BorrowerNumber,
+            LoanAmount: loanAmount
+          };
+          selectedCircle.LoanBalance.push(loanBalance);
+    
+          const loanIndex = selectedCircle.LoanRequest.findIndex((id) => id._id === loanRequest._id);
+          selectedCircle.LoanRequest.splice(loanIndex, 1);
+    
+          await selectedCircle.save();
+          response = `END Loan request has been approved by a majority of group members.`;
+          return response;
+        } else {
+          await selectedCircle.save();
+          response = `END Your vote has been recorded. Loan request is still pending.`;
+          return response;
+        }
+      }
+    }
+    
+    
+    
+    if (level === 4 && textArray[3] == 'b' ) {
+      const selectedCircleIndex = parseInt(textArray[2]) - 1;
+      const userCircles = await Savings.find({ $or: [
+        {'GroupMembers.MemberPhoneNumber': phoneNumber},
+        {'GroupMembers.Creator': phoneNumber},
+        {'GroupMembers.AdminNumber1': phoneNumber},
+        {'GroupMembers.AdminNumber2': phoneNumber}
+    ]});
+      const selectedCircle = userCircles[selectedCircleIndex];
+      const loanRequest = selectedCircle.LoanRequest.find((id) => id._id === id._id);
+      console.log(loanRequest)
+      if (!loanRequest) {
+        response = `END Loan request not found.`;
+        return response;
+      }
+    
+      if (loanRequest.Status === 'Approved' || loanRequest.Status === 'Rejected') {
+        response = `END Loan request has already been processed.`;
+        return response;
+      }
+    
+      loanRequest.RejectionVotes.push(phoneNumber);
+    
+      const totalApprovalVotes = loanRequest.ApprovalVotes.length;
+      const totalRejectionVotes = loanRequest.RejectionVotes.length;
+      const totalGroupMembers = selectedCircle.GroupMembers.length;
+    
+      // check if all group members have voted
+      if (totalApprovalVotes + totalRejectionVotes === totalGroupMembers) {
+        if (totalRejectionVotes > totalApprovalVotes) {
+          loanRequest.Status = 'Rejected';
+          const loanIndex = selectedCircle.LoanRequest.findIndex((id) => id._id === loanRequest._id);
+          selectedCircle.LoanRequest.splice(loanIndex, 1); // remove the loan request from the array
+          await selectedCircle.save();
+          response = `END Loan request has been rejected by a majority of group members.`;
+          return response;
+        } else if (totalRejectionVotes === totalApprovalVotes) {
+          loanRequest.Status = 'Pending Admin Approval';
+          await selectedCircle.save();
+          response = `END Loan request is pending admin approval.`;
+          return response;
+        } else {
+          await selectedCircle.save();
+          response = `END Loan request rejected by a majority of group members of the sum of ${loanAmount}`;
+          return response;
+        }
+      } else {
+        await selectedCircle.save();
+        response = `CON Thank you for your vote. ${totalGroupMembers - totalApprovalVotes - totalRejectionVotes} member(s) left to vote.`;
+        return response;
+      }
+    }
+    
+    
 };
 
 module.exports = handleAdmin;

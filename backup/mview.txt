@@ -1,0 +1,184 @@
+const Savings = require("./models/CircleSavings");
+const handleDebts = require("./CircleMenu");
+const User = require("./models/Users");
+const countryCode = require("./util/countryCode");
+const { response } = require("express");
+const bcrypt = require("bcrypt");
+const qs = require("qs");
+const axios = require("axios");
+
+const sendSMS = async (phoneNumber, message) => {
+  const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
+  const USERNAME = "sandbox";
+  const SMS_URL = `https://api.sandbox.africastalking.com/version1/messaging`;
+
+  try {
+    const response = await axios.post(SMS_URL, qs.stringify({
+      to: phoneNumber,
+      message: message,
+      apiKey: API_KEY,
+      username: USERNAME,
+    }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        apiKey: API_KEY,
+        username: USERNAME,
+      }
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
+const credentials = {
+  apiKey: process.env.apiKey,
+  username: process.env.username
+};
+
+
+
+const handleMember = async (textArray, phoneNumber) => {
+  let response = '';
+  const level = textArray.length;
+  const user = await User.findOne({ phoneNumber });
+
+  // If no circles exist, show options to create or join a circle
+  const circles = await Savings.find();
+  if (!circles.length) {
+    response = `CON 
+    No circles available.
+    1. Create a circle
+    2. Join a circle
+    `;
+    return response;
+  }if (level === 1) {
+    // Show a list of circles the user belongs to
+    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+
+    if (!userCircles.length) {
+      response = `CON 
+      You don't belong to any circle.
+      1. Join a circle
+      2. Create a circle
+      `;
+      return response;
+    }
+
+    response = `CON 
+    Select a circle :\n`;
+    userCircles.forEach((circle, index) => {
+      response += `${index + 1}. ${circle.GroupName}\n`;
+    });
+    response += `${userCircles.length + 1}. Join a circle\n`;
+    response += `${userCircles.length + 2}. Create a circle\n`;
+    return response;
+  }if (level === 2) {
+    // Show the details of the selected circle
+    const selectedCircleIndex = parseInt(textArray[1]) - 1;
+    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const selectedCircle = userCircles[selectedCircleIndex];
+    response = `END Circle details for ${selectedCircle.GroupName}\n`;
+    response += `Admin name: ${selectedCircle.AdminName}\n`;
+    response += `Deposit goal: ${selectedCircle.DepositGoal}\n`;
+    response += `Penalty: ${selectedCircle.Penalty}\n`;
+
+   
+     // Check if the user is in debt
+     const userDebt = selectedCircle.InDebtMembers.find(member => member.MemberPhoneNumber === phoneNumber);
+     const amount = userDebt ? userDebt.Amount : 0;
+     if (userDebt) {
+       
+       response = `CON 
+       ${selectedCircle.GroupName} - ${amount}
+       1. Repay Balance
+       `;
+       return response;
+     } else  {
+       // Push user to InDebtMembers with an initial debt amount of 0
+       const totalBalance = selectedCircle.CircleBalance.reduce(
+        (sum, member) => sum + member.Balance,
+        0);
+    response = `CON 
+        ${selectedCircle.GroupName} -$ ${totalBalance}
+        1. Deposit Fund
+        2. Request Loan
+        3. Balances
+        4. Other Actions
+    `;
+  
+     }
+    // ... other circle details
+    return response;
+  }if (level === 3 && textArray[2] === '1') {
+    const selectedCircleIndex = parseInt(textArray[1]) - 1;
+    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const selectedCircle = userCircles[selectedCircleIndex];
+  
+    
+    // Prompt user to enter deposit amount
+    response = `CON 
+      Deposit funds to ${selectedCircle.GroupName}
+      Available to deposit:
+      $`;
+  
+    return  response;
+  }
+  
+  if (level === 4 && textArray[2] === '1' && session) {
+    const depositAmount = parseFloat(textArray[3]);
+  
+    // Check if the deposit amount is valid
+    if (isNaN(depositAmount) || depositAmount <= 0) {
+      response = `CON 
+        Invalid deposit amount. Please enter a valid amount:
+        $`;
+      session.depositAmount = null;
+      return { response, session };
+    }
+  
+    const selectedCircle = session.selectedCircle;
+  
+    // Update the circle balance
+    const memberIndex = selectedCircle.CircleBalance.findIndex((member) => member.MemberPhoneNumber === phoneNumber);
+    if (memberIndex === -1) {
+      // Add new member to the circle
+      selectedCircle.CircleBalance.push({
+        MemberPhoneNumber: phoneNumber,
+        Balance: depositAmount,
+      });
+    } else {
+      // Update the existing member balance
+      selectedCircle.CircleBalance[memberIndex].Balance += depositAmount;
+    }
+  
+    // Save the updated circle balance
+    await selectedCircle.save();
+  
+    // Send SMS notification to the admin
+    const adminPhoneNumber = selectedCircle.AdminPhoneNumber;
+    const message = `New deposit of $${depositAmount} was made by ${phoneNumber} to ${selectedCircle.GroupName}. The new balance is $${selectedCircle.CircleBalance.reduce((sum, member) => sum + member.Balance, 0)}.`;
+    await sendSMS(adminPhoneNumber, message);
+  
+    // Display success message to the user
+    response = `END 
+      Deposit of $${depositAmount} was successful. Your new balance in ${selectedCircle.GroupName} is $${selectedCircle.CircleBalance.find((member) => member.MemberPhoneNumber === phoneNumber).Balance}.
+      `;
+    session.depositAmount = null;
+    return { response, session };
+  }
+  
+  
+  
+  
+  
+  
+  
+
+  // Handle join circle and create circle options here
+  // ...
+};
+
+
+module.exports = handleMember;

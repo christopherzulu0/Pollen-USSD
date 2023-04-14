@@ -1,0 +1,29 @@
+Action Items:
+
+    *Show total (available) circle balance + total outstanding loan amount on circle Home Screen
+        * Show individual user balances under the “Balances” section of the circle page
+        * Add section to show individual (outstanding) loan amounts
+    * Add a “point” system for successfully meeting deposit goal each period
+        * IE let them request loans and vote on proposals
+    * If it goes to admin vote:
+        * Just sample the admin vote from the general voting
+        * Require all 3 admins to vote yes for loan to be approved
+
+
+
+        let membersContributions = '';
+selected.MemberContribution?.forEach((member) => {
+  membersContributions += `${member.MemberPhoneNumber}: $${member.Contributed}\n`;
+});
+
+response = `CON 
+  ${selected.GroupName} - $ ${totalBalance}
+  Your contribution: $ ${Contributed}
+  Member Contributions:
+  ${membersContributions}
+  1. Deposit Fund
+  2. Request Loan
+  3. Balances
+  4. Other Actions 
+`;
+return response;
