@@ -102,12 +102,24 @@ const UserSchema = mongoose.Schema({
       type: Number,
       required: true,
     },
-    GovType: {
+    AccountType: {
       type: String,
+      required: true,
+    },
+    MinContribution: {
+      type: Number,
+      required: true,
+    },
+    MaxContribution: {
+      type: Number,
       required: true,
     },
     GroupName: {
       type: String,
+      required: true,
+    },
+    PenaltyCharge: {
+      type: Number,
       required: true,
     },
     DepositGoal: {
@@ -118,7 +130,7 @@ const UserSchema = mongoose.Schema({
       type: String,
       default: shortid.generate, 
     },
-    Rate: {
+    InterestRate: {
       type: Number,
       required: true,
     },
@@ -162,15 +174,10 @@ const UserSchema = mongoose.Schema({
         default: 'Pending'
       }
     }],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
     InvitedMembers: [{
       InvitedNumber: {
         type: Number,
         required: true,
-        unique: true
       },
     }],
     LoanBalance: [{
@@ -183,6 +190,15 @@ const UserSchema = mongoose.Schema({
         required: true,
         default: 0
       },
+      LoanInterest: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      Name: {
+        type: String,
+        required: true
+      },
      
     }],
     MemberContribution: [{
@@ -194,6 +210,10 @@ const UserSchema = mongoose.Schema({
         type: Number,
         required: true,
         default: 0
+      },
+      Earnings: {
+        type:Number,
+        required: true,
       },
       FirstName: {
         type:String,
@@ -218,22 +238,22 @@ const UserSchema = mongoose.Schema({
       MemberPhoneNumber: {
         type: Number,
         required: false,
-        unique: true
+       
       },
       Creator: {
         type: Number,
        required: false,
-        unique: true
+       
       },
       AdminNumber1: {
         type: Number,
        required: false,
-        unique: true
+        
       },
       AdminNumber2: {
         type: Number,
        required: false,
-        unique: true
+        
       },
       JoinedOn: {
         type: Date,

@@ -1,30 +1,131 @@
-Numbers           Passwords
-0965481943        2222
-0962591106        5555
+                                                                FLOWS
 
-0971488377        4444//Creator
-0968274920        3333 
-0977793293        6666
+                                                              Group Balance                      
+     TYPE OF VILLAGE BANKING MODELS                             => Total Contributions + 
+                                                              Interest Earned
+            = General VB Account                        
+
+        1.Have a clear set saving goal/amount.
+        2.Fixed Interest rate Change                            Loan Balance
+        3.Mandatory Contributions                                =>Total Group Contributions * Interest rate
+        4.Have a min & max monthly contribution.                 =>IndividualBalance
+        5.Taking out of loans is optional THOUGH encouraged.     =>Individual interest earned
+        6.Penalty on missed monthly contributions.
+        7.Penalty on defaulted loans
+
+        GENERAL VB MENU[
+        1.Enter Circle name
+        2.Select account type
+        3.Input interest rate
+        4.Input Saving goal
+        5.Input Min_Contribution
+        6.Input Max_Contribution
+        7.Input charge for late contribution
+        8.Input admin 1 number
+        9.Input admin 2 number
+
+        Confirm Menu[
+        Circle Name:
+         Account Type:
+         Interest Rate:
+         Min_Contribution:
+         Max_Contribution:
+         Saving Goal:
+         Penalty Charge:
+         Admins= 
+                Admin1: 
+                Admin2:
+        ]
+
+        ]
 
 
 
-,'GroupMembers.Creator': phoneNumber,
-'GroupMembers.AdminNumber1': phoneNumber,
-'GroupMembers.AdminNumber2': phoneNumber 
 
 
-Group code: qvJJXfV_y
-*384*199726#
+            
+            =FIXED VB  DEPOSIT ACCOUNT
+
+
+        1. Fixed saving goal
+        2.Fixed Interest rate
+        3.Fixed monthly contributions.
+        4.Taking out loan is mandatory.
+        5.Penalty on missed contributions.
+        6.Penalty on defaulted loans
+        7.Interest earned is shared equally.
+
+        FIXED VB MENU[
+        1.Enter Circle name
+        2.Select account type
+        3.Input interest rate
+        4.Input Saving goal
+        5.Input Min_Contribution
+        6.Input Max_Contribution
+        7.Input charge for late contribution
+        8.Input admin 1 number
+        9.Input admin 2 number
+
+        Confirm Menu[
+         Circle Name:
+         Account Type:
+         Interest Rate:
+         Min_Contribution:
+         Max_Contribution:
+         Saving Goal:
+         Penalty Charge:
+         Admins= 
+                Admin1: 
+                Admin2:
+        ]
+
+        ]
 
 
 
 
-ction Items:
 
+
+      AFTER CIRCLE IS CREATED
+
+      
+      ADMIN VIEW{
+       
+       Menu[
+        1. Invite Members
+        2. Vote on General VB request(2) ? Approve Fixed VB Requests(2) 
+        3. Group Balance 
+        4. Loan Balance 
+       ]
+
+      }
+
+      Views
+      1.MemberView (General VB)
+                   (Fixed VB) => No voting
+
+      2. AdminView (General VB)
+                   (Fixed VB) => No Voting
+
+
+        CIRCLE MENU
+
+        => Balances -> Group Balance[
+                Total Contributions: K 200
+                Interest Earned: K 50
+               ______________________________
+                Total Balance = K 250
+                
+        ]
    
-        * Show individual user balances under the “Balances” section of the circle page
-        * Add section to show individual (outstanding) loan amounts
-       * Add a “point” system for successfully meeting deposit goal each period
-   
+
+        => Loan Balance[
+                //Add all loan amounts + Interest rate
+                Laon Earnings : K 250
+
+                Balance                       Earned
+                John = k 50                   K 20
+                James = K100                  K 40
+        ]
     
    

@@ -70,10 +70,10 @@ const handleMember = async (textArray, phoneNumber) => {
     userCircles.forEach((circle, index) => {
       response += `${index + 1}. ${circle.GroupName}\n`;
     });
-    response += `${userCircles.length + 1}. Join a circle\n`;
-    response += `${userCircles.length + 2}. Create a circle\n`;
+
     return response;
   }
+  
   if (level === 2) {
     // Show the details of the selected circle
     const selectedCircleIndex = parseInt(textArray[1]) - 1;
@@ -169,8 +169,9 @@ response = `CON
   ${selected.GroupName} - $ ${totalBalance}
   1. Deposit Fund
   2. Request Loan
-  3. Balances
-  4. Other Actions 
+  3. Group Balances
+  4. Loan Balance
+  5. Other Actions 
 `;
     }
     
@@ -251,17 +252,25 @@ response = `CON
       const enteredPin = textArray[4];
       // Retrieve the user's PIN from the database
       const user = await User.findOne({ number: phoneNumber });
-      
+    
       if (user.pin === enteredPin) {
         const selectedCircleIndex = parseInt(textArray[1]) - 1;
-        const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber});
+        const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
         const selectedCircle = userCircles[selectedCircleIndex];
-
-
+    
         const depositAmount = parseFloat(textArray[3]);
+        
+        //Get the value for interest rate
+        const interestValue = selectedCircle && selectedCircle.InterestRate ? selectedCircle.InterestRate : 'Unknown Group'; // Use a default value if GroupName is not present
       
+        // Calculate simple interest
+        const interestRate = interestValue; // Example interest rate of 5% (replace with actual interest rate)
+        const timePeriodInMonths = 1 * 1; // Example time period of 1 year (replace with actual time period)
+        const simpleInterest = (depositAmount * interestRate * timePeriodInMonths) / 100;
+        const simpleInterestFormatted = simpleInterest.toFixed(2); // Display with 2 decimal places
+    
         const userWallet = await Wallet.findOne({ user: user._id });
-        // Update the user's wallet and circle balance with the deposit amount
+        // Update the user's wallet and circle balance with the deposit amount and simple interest
         userWallet.balance -= depositAmount;
     
         // Create a new transaction object
@@ -270,55 +279,49 @@ response = `CON
           receiver: selectedCircle._id,
           amount: depositAmount,
         });
-      
+    
         // Add the transaction to the user's transaction array
         userWallet.transactions.push(transaction);
     
-       
-        
         // Find the existing member object in circleBalance and update the balance
         const num = user.number;
         const memberIndex = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === num);
-        console.log(memberIndex.MemberPhoneNumber)
         if (memberIndex === -1) {
           // Add new member to the circle
-         
-
           selectedCircle.MemberContribution.push({
             MemberPhoneNumber: phoneNumber,
             Contributed: depositAmount,
+            Earnings: simpleInterestFormatted,
             FirstName: user.FirstName
           });
         } else {
           // Update the existing member balance if it is not 0
           selectedCircle.MemberContribution[memberIndex].Contributed += depositAmount;
+          selectedCircle.MemberContribution[memberIndex].Earnings += parseFloat(simpleInterestFormatted);
         }
         
-
         const id = selectedCircle.circleBalance.find((member)=>member._id === member._id)
         const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === id);
         if (memberIndex2 === -1) {
           // Add new member to the circle
           selectedCircle.circleBalance.push({
-            Balance: depositAmount
+            Balance: depositAmount 
           });
         } else {
           // Update the existing member balance if it is not 0
           selectedCircle.circleBalance[memberIndex2].Balance += depositAmount;
         }
-
-
-
+    
         // Save the updated wallet and circle balance
         await userWallet.save();
         await selectedCircle.save();
-      
+    
         // Display success message to the user
         response = `END 
           Your Deposit of $${depositAmount} was successful to ${selectedCircle.GroupName}. Your new balance in ${selectedCircle.GroupName}.
           You will receive an sms if we encounter any issues.
         `;
-      
+    
         return response;
       } else {
         // Display error message to the user
@@ -328,6 +331,8 @@ response = `CON
         return response;
       }
     }
+    
+    
     
   
   if (level === 3 && textArray[2] === '2' ) {
@@ -348,7 +353,7 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
   const userCircles = await Savings.find({
     $or: [
       { 'GroupMembers.MemberPhoneNumber': phoneNumber },
-      { 'LoanRequest.MemberPhoneNumber': phoneNumber }
+      { 'LoanRequest.BorrowerNumber': phoneNumber }
     ]
   });
   const selectedCircle = userCircles[selectedCircleIndex];
@@ -402,8 +407,16 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
     Approved: false,
     Rejected: false
   };
+ if (selectedCircle) {
+  // Check if selectedCircle is defined and not null
+  if (!selectedCircle.LoanRequest) {
+    selectedCircle.LoanRequest = []; // Initialize LoanRequest as an empty array if it doesn't exist
+  }
   selectedCircle.LoanRequest.push(loanRequest);
   await selectedCircle.save();
+} else {
+  console.error('selectedCircle is undefined or null'); // Handle the case where selectedCircle is undefined or null
+}
 
   // Send a notification to all circle members to vote on the loan request
   selectedCircle.GroupMembers.forEach(member => {
@@ -454,8 +467,8 @@ if (level === 3 && textArray[2] == 'a' ) {
       loanRequest.Status = 'Approved';
 
       const loanAmount = loanRequest ? loanRequest.LoanAmount: 0;
-      const borrowerIndex = selectedCircle.circleBalance.findIndex(
-        (member) => member.MemberPhoneNumber === loanRequest.BorrowerNumber
+      const borrowerIndex = selectedCircle.LoanRequest.findIndex(
+        (member) => member.BorrowerNumber === loanRequest.BorrowerNumber
       );
   
       
@@ -467,7 +480,7 @@ if (level === 3 && textArray[2] == 'a' ) {
       }
 
       if (selectedCircle.circleBalance[borrowerIndex].Balance < loanAmount) {
-        response = `END Error: borrower does not have sufficient balance to repay loan.`;
+        response = `END Error: borrower does not have sufficient balance to request for a loan.`;
         return response;
       }
 
@@ -478,11 +491,26 @@ if (level === 3 && textArray[2] == 'a' ) {
         { new: true }
       );
 
-      const loanBalance = {
-        BorrowerNumber: loanRequest.BorrowerNumber,
-        LoanAmount: loanAmount
-      };
-      selectedCircle.LoanBalance.push(loanBalance);
+        //Get the value for interest rate
+        const interestValue = selectedCircle && selectedCircle.InterestRate ? selectedCircle.InterestRate : 'Unknown Group'; // Use a default value if GroupName is not present
+      
+        // Calculate simple interest
+        const interestRate = interestValue; // Example interest rate of 5% (replace with actual interest rate)
+        const timePeriodInMonths = 1 * 1; // Example time period of 1 year (replace with actual time period)
+        const simpleInterest = (loanAmount * interestRate * timePeriodInMonths) / 100;
+        const simpleInterestFormatted = simpleInterest.toFixed(2); // Display with 2 decimal places
+      
+        const users = await User.findOne({number: loanRequest.BorrowerNumber})
+       console.log(users.FirstName)
+        const loanBalance = {
+          BorrowerNumber: loanRequest.BorrowerNumber,
+          LoanAmount: loanAmount,
+          LoanInterest:simpleInterestFormatted,
+          Name: users.FirstName,
+        };
+        console.log(loanBalance)
+        selectedCircle.LoanBalance.push(loanBalance);
+        
 
       const loanIndex = selectedCircle.LoanRequest.findIndex((id) => id._id === loanRequest._id);
       selectedCircle.LoanRequest.splice(loanIndex, 1);
@@ -548,30 +576,60 @@ if (level === 3 && textArray[2] == 'b' ) {
   }
 }
 
-if(level === 3 && textArray[2] === '3'){
+if (level === 3 && textArray[2] === '3') {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
   const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
   const selected = userCircles[selectedCircleIndex];
 
-  let response = `CON 
-                 Deposit History for ${selected.GroupName}
-                  `;
-
-  // Loop through MemberContribution array and concatenate each member's details
-  for (let i = 0; i < selected.MemberContribution.length; i++) {
-    const member = selected.MemberContribution[i];
-    response += `${member.FirstName}: K${member.Contributed}\n`;
+  if (selected.MemberContribution.length === 0) {
+    // If MemberContribution array has no data, display "No contributions"
+    response = "CON No contributions";
+    return response;
   }
 
-  return response;
+  for (let i = 0; i < selected.MemberContribution.length; i++) {
+    const member = selected.MemberContribution[i];
+    const total = member.Contributed + member.Earnings;
+
+    response = `CON 
+                Total Contributions: K${member.Contributed}
+                Interest Earned: K${member.Earnings}
+                ______________________________
+                Total Balance = K${total}
+             `;
+    return response;
+  }
 }
 
- 
-  
+
+if (level === 3 && textArray[2] === '4') {
+  const selectedCircleIndex = parseInt(textArray[1]) - 1;
+  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const selected = userCircles[selectedCircleIndex];
+
+  if (selected.LoanBalance.length === 0) {
+    // If LoanBalance array has no data, display "No loan balances"
+    response = "CON No loan balances";
+    return response;
+  }
+
+  for (let i = 0; i < selected.LoanBalance.length; i++) {
+    const member = selected.LoanBalance[i];
+    const total = member.LoanInterest + member.LoanAmount;
+
+    response = `CON 
+                  ${member.Name}                   
+                1. Loan Balance: K${total}
+                2. Earned: K${member.LoanInterest}  
+             `;
+    return response;
+  }
+}
 
 
   // Handle join circle and create circle options here
   // ...
+
 };
 
 

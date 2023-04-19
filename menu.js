@@ -385,21 +385,14 @@ const menu = {
     } if (level == 3) {
    response = `CON Enter your PIN:`;
       return response;
-    } if (level == 4) {
-      async function confirmDetails() {
-        const userNumber = countryCode(textArray[1]);
-        let user = await User.findOne({ number: userNumber });
-        return user;
-      }
-  
-     
-      let receiver = await confirmDetails();
-      if (!receiver) {
+    } if (level == 4) { 
+     const receiverNumber = countryCode(textArray[1]);
+       const receivers = await User.findOne({ number: receiverNumber});
+      if (!receivers) {
         return (response = "END This user has not signed up for Pollen.Would you like to invite them to Join?You can send or request payment once they join.\n 1. Yes \n 2. No");
       } else {
-        
-        const userNumber = countryCode(textArray[1]);
-          const receiver = await User.findOne({ number: userNumber});
+        const receiverNumber = countryCode(textArray[1]);
+          const receiver = await User.findOne({ number:receiverNumber});
         const receiverWallets = await Wallet.findOne({ user: receiver._id });
         // let receiverAmount = receiverWallets ? receiverWallets.balance:0;
         console.log(receiverWallets);
@@ -413,7 +406,7 @@ const menu = {
         let amount = parseInt(textArray[2]);
         const senderWallet = sender.balance;
         let senderPin = user.pin;
-  
+        console.log(senderPin)
         // validate the pin
         if (textArray[3] != senderPin) {
           return (response = "END Invalid Pin. Transaction cancelled.");
@@ -454,7 +447,7 @@ const menu = {
   
         response = `END Your payment of K${amount} to ${receiverName} has been submitted.\nYou will receive an SMS notification once it is complete.`;
       }
-  
+
       return response;
     } else if (level == 5 && textArray[4] == 2) {
       return (response = "END Cancelled. Thank you for using our service");
@@ -483,12 +476,12 @@ const menu = {
 
       const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
 
-    if (!userCircles.length) {
-      response = `CON 
-      You don't belong to any circle.
-      `;
-      return response;
-    }
+    // if (!userCircles.length) {
+    //   response = `CON 
+    //   You don't belong to any circle.
+    //   `;
+    //   return response;
+    // }
 
     response += `
     Select a circle to view balance :\n`;

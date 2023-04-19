@@ -58,149 +58,150 @@ const handleAdmin = async (textArray, phoneNumber) => {
                 `;
       return response;
     }
-    // if (level == 2 && textArray[1] == 1) {
-    //   response = `CON Enter the number you want to invite to the circle`;
-    //   return response;
-    // } else if (level == 3) {
-    //   const userNumber = countryCode(textArray[2]);
-    //   let user = await User.findOne({ number: userNumber });
-    //   if (user) {
-    //     let circleMember = textArray[2];
-    //     response = `CON ${circleMember}, has been invited to join your circle.
-    //                 1. Add to invite list`;
+    if (level == 2 && textArray[1] == 1) {
+      response = `CON Enter the number you want to invite to the circle`;
+      return response;
+    } else if (level == 3) {
+      const userNumber = countryCode(textArray[2]);
+      let user = await User.findOne({ number: userNumber });
+      if (user) {
+        let circleMember = textArray[2];
+        response = `CON ${circleMember}, has been invited to join your circle.
+                    1. Add to invite list`;
 
-    //                 async function confirmDetails() {
-    //                   let user = await Savings.findOne({ number: phoneNumber });
-    //                   return user;
-    //                 }
+                    async function confirmDetails() {
+                      let user = await Savings.findOne({ number: phoneNumber });
+                      return user;
+                    }
                 
-    //                 // Assigns the user to a variable for manipulation
-    //                 let user = await confirmDetails();
+                    // Assigns the user to a variable for manipulation
+                    let user = await confirmDetails();
                 
                  
             
-    //   } else {
-    //     let circleMember = textArray[2];
-    //     response = `CON ${circleMember}, has been invited to Pollen and join your circle.
-    //                 1. Add to invite list`;
+      } else {
+        let circleMember = textArray[2];
+        response = `CON ${circleMember}, has been invited to Pollen and join your circle.
+                    1. Add to invite list`;
 
-    //                 async function confirmDetails() {
-    //                   let user = await Savings.findOne({ number: phoneNumber });
-    //                   return user;
-    //                 }
+                    async function confirmDetails() {
+                      let user = await Savings.findOne({ number: phoneNumber });
+                      return user;
+                    }
                 
-    //                 // Assigns the user to a variable for manipulation
-    //                 let user = await confirmDetails();
+                    // Assigns the user to a variable for manipulation
+                    let user = await confirmDetails();
                 
-    //                 let code = user.GroupCode;
+                    let code = user.GroupCode;
                    
-    //     await Savings.findOneAndUpdate(
-    //       { GroupCode: code },
-    //       { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
-    //       { new: true, upsert: true }
-    //     );
-    //   }
-    //   return response;
-    // } else if (level == 4 && textArray[3] == 1) {
-    //   let user = await Savings.findOne({ number: phoneNumber });
-    //   let code = user.GroupCode;
-    //   let name = user.GroupName;
-    //   await Savings.findOneAndUpdate(
-    //     { GroupCode: code },
-    //     { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
-    //     { new: true, upsert: true }
-    //   );
+        await Savings.findOneAndUpdate(
+          { GroupCode: code },
+          { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
+          { new: true, upsert: true }
+        );
+      }
+      return response;
+    } else if (level == 4 && textArray[3] == 1) {
+      let user = await Savings.findOne({ number: phoneNumber });
+      let code = user.GroupCode;
+      let name = user.GroupName;
+      await Savings.findOneAndUpdate(
+        { GroupCode: code },
+        { $push: { InvitedMembers: { InvitedNumber: textArray[2] } } },
+        { new: true, upsert: true }
+      );
 
 
      
-    //   response = `CON ${textArray[2]}, has been invited to join ${name} and added to the invite list`;
-    //   return response;
-    // }
+      response = `CON ${textArray[2]}, has been invited to join ${name} and added to the invite list`;
+      return response;
+    }
     
     
-  //   if(level === 2 && textArray[1] === '2'){
-  //     const circles = await Savings.find({
-  //       $or: [
-  //         { 'GroupMembers.Creator': phoneNumber },
-  //         { 'GroupMembers.AdminNumber1': phoneNumber },
-  //         { 'GroupMembers.AdminNumber2': phoneNumber }
-  //       ]
-  //     });
+    if(level === 2 && textArray[1] === '2'){
+      const circles = await Savings.find({
+        $or: [
+          { 'GroupMembers.Creator': phoneNumber },
+          { 'GroupMembers.AdminNumber1': phoneNumber },
+          { 'GroupMembers.AdminNumber2': phoneNumber }
+        ]
+      });
       
-  //     response = `CON 
-  //   Select a circle :\n`;
-  //  circles.forEach((circle, index) => {
-  //     response += `${index + 1}. ${circle.GroupName}\n`;
-  //   });
-  //   return response;
-  //   }
-  //   if(level === 3){
-  //     const selectedCircleIndex = parseInt(textArray[2]) - 1;
-  //   const userCircles = await Savings.find({
-  //     $or: [
-  //       { 'GroupMembers.Creator': phoneNumber },
-  //       { 'GroupMembers.AdminNumber1': phoneNumber },
-  //       { 'GroupMembers.AdminNumber2': phoneNumber }
-  //     ]
-  //   });
-  //   const selectedCircle = userCircles[selectedCircleIndex];
+      response = `CON 
+    Select a circle :\n`;
+   circles.forEach((circle, index) => {
+      response += `${index + 1}. ${circle.GroupName}\n`;
+    });
+    return response;
+    }
+    if(level === 3){
+      const selectedCircleIndex = parseInt(textArray[2]) - 1;
+    const userCircles = await Savings.find({
+      $or: [
+        { 'GroupMembers.Creator': phoneNumber },
+        { 'GroupMembers.AdminNumber1': phoneNumber },
+        { 'GroupMembers.AdminNumber2': phoneNumber }
+      ]
+    });
+    const selectedCircle = userCircles[selectedCircleIndex];
 
-  //   if (selectedCircle.LoanRequest.length > 0) {
-  //     const loanRequest = selectedCircle.LoanRequest[0];
-  //     const totalGroupMembers = selectedCircle.GroupMembers.length;
-  //     const totalVotes = loanRequest.ApprovalVotes.length + loanRequest.RejectionVotes.length;
+    if (selectedCircle.LoanRequest.length > 0) {
+      const loanRequest = selectedCircle.LoanRequest[0];
+      const totalGroupMembers = selectedCircle.GroupMembers.length;
+      const totalVotes = loanRequest.ApprovalVotes.length + loanRequest.RejectionVotes.length;
     
-  //     const user = User.findOne({number:phoneNumber});
-  //     if (totalVotes < totalGroupMembers) {
-  //       const hasVoted = loanRequest.ApprovalVotes.includes(user) || loanRequest.RejectionVotes.includes(user);
-  //       if (!hasVoted) {
-  //         response = `CON 
-  //           ${selectedCircle.GroupName}
-  //           a. Approve Request
-  //           b. Reject Request
-  //         `;
-  //         return response;
-  //       } else {
-  //         // If the user has already voted, return a message to inform them
-  //         response = `END You have already voted on this loan request.`;
-  //         return response;
-  //       }
-  //     } else {
-  //       // Check if all members have voted either for approval or rejection
-  //       const totalApprovalVotes = loanRequest.ApprovalVotes.length;
-  //       const totalRejectionVotes = loanRequest.RejectionVotes.length;
+      const user = User.findOne({number:phoneNumber});
+      if (totalVotes < totalGroupMembers) {
+        const hasVoted = loanRequest.ApprovalVotes.includes(user) || loanRequest.RejectionVotes.includes(user);
+        if (!hasVoted) {
+          response = `CON 
+            ${selectedCircle.GroupName}
+            1. Approve Request
+            2. Reject Request
+          `;
+          return response;
+        } else {
+          // If the user has already voted, return a message to inform them
+          response = `END You have already voted on this loan request.`;
+          return response;
+        }
+      } else {
+        // Check if all members have voted either for approval or rejection
+        const totalApprovalVotes = loanRequest.ApprovalVotes.length;
+        const totalRejectionVotes = loanRequest.RejectionVotes.length;
     
-  //       if (totalApprovalVotes === totalGroupMembers) {
-  //         loanRequest.Status = 'Approved';
-  //         await selectedCircle.save();
-  //         response = `END Loan request has been approved by all group members.`;
-  //         return response;
-  //       } else if (totalRejectionVotes === totalGroupMembers) {
-  //         loanRequest.Status = 'Rejected';
-  //         await selectedCircle.save();
-  //         response = `END Loan request has been rejected by all group members.`;
-  //         return response;
-  //       } else if (totalRejectionVotes > totalApprovalVotes) {
-  //         loanRequest.Status = 'Rejected';
-  //         await selectedCircle.save();
-  //         response = `END Loan request has been rejected by a majority of group members.`;
-  //         return response;
-  //       }
-  //        else {
-  //         loanRequest.Status = 'Pending';
-  //         await selectedCircle.save();
-  //         response = `END Loan request is pending group members' votes.`;
-  //         return response;
-  //       }
-  //     }
-  //   } else {
-  //     console.log('No loan requests found.');
-  //   }
+        if (totalApprovalVotes === totalGroupMembers) {
+          loanRequest.Status = 'Approved';
+          await selectedCircle.save();
+          response = `END Loan request has been approved by all group members.`;
+          return response;
+        } else if (totalRejectionVotes === totalGroupMembers) {
+          loanRequest.Status = 'Rejected';
+          await selectedCircle.save();
+          response = `END Loan request has been rejected by all group members.`;
+          return response;
+        } else if (totalRejectionVotes > totalApprovalVotes) {
+          loanRequest.Status = 'Rejected';
+          await selectedCircle.save();
+          response = `END Loan request has been rejected by a majority of group members.`;
+          return response;
+        }
+         else {
+          loanRequest.Status = 'Pending';
+          await selectedCircle.save();
+          response = `END Loan request is pending group members' votes.`;
+          return response;
+        }
+      }
+    } else {
+      console.log('No loan requests found.');
+    }
     
-  // }
+  }
 
+  //code to be merged
   
-    if (level === 4 && textArray[3] == 'a' ) {
+    if (level === 4 && textArray[3] == '1' ) {
       const selectedCircleIndex = parseInt(textArray[2]) - 1;
       const userCircles = await Savings.find({ $or: [
         {'GroupMembers.Creator': phoneNumber},
@@ -286,7 +287,7 @@ const handleAdmin = async (textArray, phoneNumber) => {
     
     
     
-    if (level === 4 && textArray[3] == 'b' ) {
+    if (level === 4 && textArray[3] == '2' ) {
       const selectedCircleIndex = parseInt(textArray[2]) - 1;
       const userCircles = await Savings.find({ $or: [
         {'GroupMembers.MemberPhoneNumber': phoneNumber},
