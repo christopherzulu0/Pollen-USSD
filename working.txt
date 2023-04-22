@@ -129,3 +129,56 @@
         ]
     
    
+
+   *Remaining Updates
+   => Send texts to all group members when there is a loan request.
+       -Display circle menu once the member votes
+
+   => Display loan balance to first Menu
+   => Allow members to join and not create groups when already in a group.
+   => Back functionality
+
+Loan Request Menu Days*
+1. 1 Month(30 Days)
+2. 2 Months(60 Days)
+3. 3 Months(90 Days)
+4. 6 Months(180 Days)
+5. 1 Year(360 Days)
+
+// Function for selecting Month type
+const selectAccountType = () => {
+  return `CON The Government type can be 
+          1. 1 Month(30 Days)
+          2. 2 Months(60 Days)
+          3. 3 Months(90 Days)
+          4. 6 Months(180 Days)
+          5. 1 Year(360 Days)
+        `;
+};
+
+const defaultValues = {
+  OneMonth: {
+    monthTypeName: "30"
+  },
+ TwoMonths: {
+    monthTypeName: "60"
+  },
+  ThreeMonths: {
+    monthTypeName: "90"
+  },
+  FourMonths: {
+    monthTypeName: "180"
+  },
+  FiveMonths: {
+    monthTypeName: "360"
+  }
+};
+
+
+Loan Repayment 
+-Deduct from the wallet
+-Remove it from the collection
+-Update circleBalance
+
+Wallet: 5300
+circleBalance: k600

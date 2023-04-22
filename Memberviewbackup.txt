@@ -7,21 +7,19 @@ const qs = require("qs");
 const axios = require("axios");
 
 const sendSMS = async (phoneNumber, message) => {
-  const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
-  const USERNAME = "sandbox";
   const SMS_URL = `https://api.sandbox.africastalking.com/version1/messaging`;
 
   try {
     const response = await axios.post(SMS_URL, qs.stringify({
       to: phoneNumber,
       message: message,
-      apiKey: API_KEY,
-      username: USERNAME,
+      apiKey: process.env.apiKey,
+      username: process.env.username,
     }), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        apiKey: API_KEY,
-        username: USERNAME,
+        apiKey: process.env.apiKey,
+        username: process.env.username,
       }
     });
     console.log(response.data);
@@ -31,11 +29,39 @@ const sendSMS = async (phoneNumber, message) => {
 };
 
 
-const credentials = {
-  apiKey: process.env.apiKey,
-  username: process.env.username
+// const credentials = {
+//   apiKey: process.env.apiKey,
+//   username: process.env.username
+// };
+
+// Function for selecting Month type
+const selectMonthType = () => {
+  return `CON The Government type can be 
+          1. 1 Month(30 Days)
+          2. 2 Months(60 Days)
+          3. 3 Months(90 Days)
+          4. 6 Months(180 Days)
+          5. 1 Year(360 Days)
+        `;
 };
 
+const defaultValues = {
+  OneMonth: {
+    monthTypeName: "30"
+  },
+ TwoMonths: {
+    monthTypeName: "60"
+  },
+  ThreeMonths: {
+    monthTypeName: "90"
+  },
+  FourMonths: {
+    monthTypeName: "180"
+  },
+  FiveMonths: {
+    monthTypeName: "360"
+  }
+};
 
 
 const handleMember = async (textArray, phoneNumber) => {
@@ -79,7 +105,10 @@ const handleMember = async (textArray, phoneNumber) => {
     const selectedCircleIndex = parseInt(textArray[1]) - 1;
     const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
     const selectedCircle = userCircles[selectedCircleIndex];
-
+    response = `END Circle details for ${selectedCircle.GroupName}\n`;
+    response += `Admin name: ${selectedCircle.AdminName}\n`;
+    response += `Deposit goal: ${selectedCircle.DepositGoal}\n`;
+    response += `Penalty: ${selectedCircle.Penalty}\n`;
   
 
 // Check if the user has already voted
@@ -140,19 +169,15 @@ if (selectedCircle.LoanRequest.length > 0) {
 // console.log(loanRequest);
     
     //Check if the user is in debt
-    const userd = await User.findOne({number:phoneNumber});
-    const borrowerNumb = userd.number;
-    const userDebt = selectedCircle.LoanBalance.findIndex((member) => member.BorrowerNumber ===  borrowerNumb);
+    const userd = User.findOne({number:phoneNumber});
+    const userDebt = selectedCircle.LoanBalance.find((member) => member.BorrowerNumber === userd);
     // console.log(JSON.stringify(selectedCircle.LoanBalance))
-    const loanBalances = Object.values(selectedCircle.LoanBalance);
-    const amount1 = loanBalances.reduce((sum, member) => sum + member.LoanAmount,0);
-    const amount2 = loanBalances.reduce((sum, member) => sum + member.LoanInterest,0);
-    const totalpayment= amount1 + amount2;
-
-    if (userDebt>=0) {
-     
+    console.log(userDebt)
+    if (userDebt) {
+      const amount = userDebt.LoanAmount;
+      console.log(amount)
       response = `CON 
-        ${selectedCircle.GroupName} - ${totalpayment}
+        ${selectedCircle.GroupName} - ${amount}
         r. Repay Balance
       `;
       return response;
@@ -241,16 +266,23 @@ response = `CON
   
    
   
+    
+  }
+  
+  if (level === 5 && textArray[2] === '1' && textArray[4]) {
+        response = selectMonthType();
+        return response;
+  }
+  if (level === 6 && textArray[2] === '1' && textArray[4]) {
     // Prompt the user to enter their PIN
     response = `CON 
       Please enter your PIN to complete this transaction:
       `;
     return response;
-  }
-  
+}
     // Validate the entered PIN
-    if (level === 5 && textArray[2] === '1' && textArray[4]) {
-      const enteredPin = textArray[4];
+    if (level === 6 && textArray[2] === '1' && textArray[4]) {
+      const enteredPin = textArray[6];
       // Retrieve the user's PIN from the database
       const user = await User.findOne({ number: phoneNumber });
     
@@ -260,13 +292,32 @@ response = `CON
         const selectedCircle = userCircles[selectedCircleIndex];
     
         const depositAmount = parseFloat(textArray[3]);
+
+          const Months = textArray[5];
+        let defaults;
+
+        if (Months == 1) {
+          defaults = defaultValues.OneMonth;
+        } else if (Months == 2) {
+          defaults = defaultValues.TwoMonths;
+        }  if (Months == 3) {
+          defaults = defaultValues.ThreeMonths;
+        } else if (Months == 4) {
+          defaults = defaultValues.FourMonths;
+        }else if (Months == 5) {
+          defaults = defaultValues.FiveMonths;
+        }  else {
+          // handle invalid government type
+          response = `END Invalid Month request`;
+          return response;
+        }
         
         //Get the value for interest rate
         const interestValue = selectedCircle && selectedCircle.InterestRate ? selectedCircle.InterestRate : 'Unknown Group'; // Use a default value if GroupName is not present
       
         // Calculate simple interest
         const interestRate = interestValue; // Example interest rate of 5% (replace with actual interest rate)
-        const timePeriodInMonths = 1 * 1; // Example time period of 1 year (replace with actual time period)
+        const timePeriodInMonths = 1 * defaults.Months; // Example time period of 1 year (replace with actual time period)
         const simpleInterest = (depositAmount * interestRate * timePeriodInMonths) / 100;
         const simpleInterestFormatted = simpleInterest.toFixed(2); // Display with 2 decimal places
     
@@ -283,7 +334,8 @@ response = `CON
     
         // Add the transaction to the user's transaction array
         userWallet.transactions.push(transaction);
-    
+      
+        if (Months == 1) {
         // Find the existing member object in circleBalance and update the balance
         const num = user.number;
         const memberIndex = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === num);
@@ -301,26 +353,148 @@ response = `CON
           selectedCircle.MemberContribution[memberIndex].Earnings += parseFloat(simpleInterestFormatted);
         }
         
-        
-        const selectedCircleIdString = selectedCircle._id.toString();
-        const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === selectedCircleIdString);
+        const id = selectedCircle.circleBalance.find((member)=>member._id === member._id)
+        const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === id);
         if (memberIndex2 === -1) {
           // Add new member to the circle
           selectedCircle.circleBalance.push({
-            _id: selectedCircle._id,
             Balance: depositAmount 
           });
-          
         } else {
           // Update the existing member balance if it is not 0
           selectedCircle.circleBalance[memberIndex2].Balance += depositAmount;
         }
+    
+      }
+      if (Months == 2) {
+        // Find the existing member object in circleBalance and update the balance
+        const num = user.number;
+        const memberIndex = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === num);
+        if (memberIndex === -1) {
+          // Add new member to the circle
+          selectedCircle.MemberContribution.push({
+            MemberPhoneNumber: phoneNumber,
+            Contributed: depositAmount,
+            Earnings: simpleInterestFormatted,
+            FirstName: user.FirstName
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.MemberContribution[memberIndex].Contributed += depositAmount;
+          selectedCircle.MemberContribution[memberIndex].Earnings += parseFloat(simpleInterestFormatted);
+        }
         
+        const id = selectedCircle.circleBalance.find((member)=>member._id === member._id)
+        const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === id);
+        if (memberIndex2 === -1) {
+          // Add new member to the circle
+          selectedCircle.circleBalance.push({
+            Balance: depositAmount 
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.circleBalance[memberIndex2].Balance += depositAmount;
+        }
+      }
+      if (Months == 3) {
+        // Find the existing member object in circleBalance and update the balance
+        const num = user.number;
+        const memberIndex = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === num);
+        if (memberIndex === -1) {
+          // Add new member to the circle
+          selectedCircle.MemberContribution.push({
+            MemberPhoneNumber: phoneNumber,
+            Contributed: depositAmount,
+            Earnings: simpleInterestFormatted,
+            FirstName: user.FirstName
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.MemberContribution[memberIndex].Contributed += depositAmount;
+          selectedCircle.MemberContribution[memberIndex].Earnings += parseFloat(simpleInterestFormatted);
+        }
+        
+        const id = selectedCircle.circleBalance.find((member)=>member._id === member._id)
+        const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === id);
+        if (memberIndex2 === -1) {
+          // Add new member to the circle
+          selectedCircle.circleBalance.push({
+            Balance: depositAmount 
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.circleBalance[memberIndex2].Balance += depositAmount;
+        }
+      }
+      if (Months == 4) {
+        // Find the existing member object in circleBalance and update the balance
+        const num = user.number;
+        const memberIndex = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === num);
+        if (memberIndex === -1) {
+          // Add new member to the circle
+          selectedCircle.MemberContribution.push({
+            MemberPhoneNumber: phoneNumber,
+            Contributed: depositAmount,
+            Earnings: simpleInterestFormatted,
+            FirstName: user.FirstName
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.MemberContribution[memberIndex].Contributed += depositAmount;
+          selectedCircle.MemberContribution[memberIndex].Earnings += parseFloat(simpleInterestFormatted);
+        }
+        
+        const id = selectedCircle.circleBalance.find((member)=>member._id === member._id)
+        const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === id);
+        if (memberIndex2 === -1) {
+          // Add new member to the circle
+          selectedCircle.circleBalance.push({
+            Balance: depositAmount 
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.circleBalance[memberIndex2].Balance += depositAmount;
+        }
+      }
+      if (Months == 5) {
+        // Find the existing member object in circleBalance and update the balance
+        const num = user.number;
+        const memberIndex = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === num);
+        if (memberIndex === -1) {
+          // Add new member to the circle
+          selectedCircle.MemberContribution.push({
+            MemberPhoneNumber: phoneNumber,
+            Contributed: depositAmount,
+            Earnings: simpleInterestFormatted,
+            FirstName: user.FirstName
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.MemberContribution[memberIndex].Contributed += depositAmount;
+          selectedCircle.MemberContribution[memberIndex].Earnings += parseFloat(simpleInterestFormatted);
+        }
+        
+        const id = selectedCircle.circleBalance.find((member)=>member._id === member._id)
+        const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === id);
+        if (memberIndex2 === -1) {
+          // Add new member to the circle
+          selectedCircle.circleBalance.push({
+            Balance: depositAmount 
+          });
+        } else {
+          // Update the existing member balance if it is not 0
+          selectedCircle.circleBalance[memberIndex2].Balance += depositAmount;
+        }
     
-        // Save the updated wallet and circle balance
-        await userWallet.save();
-        await selectedCircle.save();
-    
+       
+      }else {
+        // handle invalid government type
+        return 'END Invalid Month type.';
+      }
+
+       // Save the updated wallet and circle balance
+       await userWallet.save();
+       await selectedCircle.save();
         // Display success message to the user
         response = `END 
           Your Deposit of $${depositAmount} was successful to ${selectedCircle.GroupName}. Your new balance in ${selectedCircle.GroupName}.
@@ -424,11 +598,13 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
 }
 
   // Send a notification to all circle members to vote on the loan request
-  selectedCircle.GroupMembers.forEach(member => {
+  for (const member of selectedCircle.GroupMembers) {
     if (member.MemberPhoneNumber !== phoneNumber) {
-      // TODO: Implement code to send a notification to each member
+      await sendSMS(phoneNumber, "Your loan request has been submitted for approval. Please vote on the loan request.");
     }
-  });
+  }
+  
+  
 
   response = `END 
     Your loan request has been submitted for approval. You will receive a notification when it has been approved or rejected.
@@ -630,57 +806,6 @@ if (level === 3 && textArray[2] === '4') {
     return response;
   }
 }
-
-
-if (level === 3 && textArray[2] === "r") {
-  const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
-  const selectedCircle = userCircles[selectedCircleIndex];
-  const selected = userCircles[selectedCircleIndex];
-
-  // Check if the user is in debt
-  const userd = await User.findOne({ number: phoneNumber });
-  const borrowerNumb = userd.number;
-  const userDebt = selectedCircle.LoanBalance.findIndex((member) => member.BorrowerNumber === borrowerNumb);
-
-  // Update the loan balance for the user
-  const loanBalance = selectedCircle.LoanBalance[userDebt];
-  const repaymentAmount = loanBalance.LoanAmount + loanBalance.LoanInterest;
-  loanBalance.LoanAmount = 0;
-  loanBalance.LoanInterest = 0;
-  await selectedCircle.save();
-
-  // Check if user has enough balance in the wallet to repay the loan
-  const wallet = await Wallet.findOne({ user: userd._id });
-  
-  if (wallet.balance >= repaymentAmount) {
-    // Update the wallet balance
-    wallet.balance -= repaymentAmount;
-    await wallet.save();
-
-
-     // Update the circle balance
-     const selectedCircleIdString = selectedCircle._id.toString();
-     const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === selectedCircleIdString);
-     
-     selected.circleBalance[memberIndex2].Balance += repaymentAmount;
-     await selected.save();
- 
-     // Remove the loan balance entry
-     selectedCircle.LoanBalance.splice(userDebt, 1);
-     await selectedCircle.save();
-
-    
-
-    response = `END Repayment of $${repaymentAmount} successful. Your loan balance has been cleared.`;
-  } else {
-    response = `END Insufficient balance. Your wallet balance is not enough to repay the loan.`;
-    return response;
-  }
-
-  return response;
-}
-
 
 
   // Handle join circle and create circle options here

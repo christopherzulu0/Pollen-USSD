@@ -223,8 +223,8 @@ const UserSchema = mongoose.Schema({
     circleBalance:[
       {
         _id: {
-          type: mongoose.Types.ObjectId,
-          auto: true,
+          type: String,
+          required: true
         },
         Balance: {
           type: Number,
