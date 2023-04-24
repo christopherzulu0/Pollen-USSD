@@ -638,6 +638,8 @@ if (level === 3 && textArray[2] === "r") {
   const selectedCircle = userCircles[selectedCircleIndex];
   const selected = userCircles[selectedCircleIndex];
 
+
+
   // Check if the user is in debt
   const userd = await User.findOne({ number: phoneNumber });
   const borrowerNumb = userd.number;
@@ -662,7 +664,7 @@ if (level === 3 && textArray[2] === "r") {
      // Update the circle balance
      const selectedCircleIdString = selectedCircle._id.toString();
      const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === selectedCircleIdString);
-     
+
      selected.circleBalance[memberIndex2].Balance += repaymentAmount;
      await selected.save();
  
@@ -670,7 +672,15 @@ if (level === 3 && textArray[2] === "r") {
      selectedCircle.LoanBalance.splice(userDebt, 1);
      await selectedCircle.save();
 
-    
+    // const updateLoanPayment = async (circleId) => {
+    //   const circle = await selectedCircle.LoanBalance.findIndex((member)=>member.BorrowerNumber === userDebt.BorrowerNumber);
+    //   circle.LoanPaymentStatus = true;
+    //   circle.LoanPaymentDate = new Date();
+    //   await circle.save();
+    // };
+
+    // Call the updateLoanPayment() function to update loan payment status and payment date
+    // await updateLoanPayment(selectedCircle._id); // Pass the circle ID to the function
 
     response = `END Repayment of $${repaymentAmount} successful. Your loan balance has been cleared.`;
   } else {
