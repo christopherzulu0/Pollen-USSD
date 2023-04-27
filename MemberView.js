@@ -162,7 +162,7 @@ if (selectedCircle.LoanRequest.length > 0) {
     const amount2 = loanBalances.reduce((sum, member) => sum + member.LoanInterest,0);
     const totalpayment= amount1 + amount2;
 
-    if (userDebt>=0) {
+    if (userDebt>) {
      
       response = `CON 
         ${selectedCircle.GroupName} - ${totalpayment}
