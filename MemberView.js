@@ -103,21 +103,24 @@ if (selectedCircle.LoanRequest.length > 0) {
   const totalGroupMembers = selectedCircle.GroupMembers.length;
   const totalVotes = loanRequest.ApprovalVotes.length + loanRequest.RejectionVotes.length;
 
-  const user = User.findOne({number:phoneNumber});
+  const type = loanRequest.LoanReason;
+  const user = await User.findOne({number:phoneNumber});
+  const member = user.number;
+
   if (totalVotes < totalGroupMembers) {
-    const hasVoted = loanRequest.ApprovalVotes.includes(user) || loanRequest.RejectionVotes.includes(user);
+    const hasVoted = loanRequest.ApprovalVotes.includes(member) || loanRequest.RejectionVotes.includes(member);
+   
     if (!hasVoted) {
       response = `CON 
-        ${selectedCircle.GroupName}
+        Loan Reason:${type}
         a. Approve Request
         b. Reject Request
       `;
       return response;
-    } else {
-      // If the user has already voted, return a message to inform them
-      response = `END You have already voted on this loan request.`;
-      return response;
-    }
+    } 
+  
+
+
   } else {
     // Check if all members have voted either for approval or rejection
     const totalApprovalVotes = loanRequest.ApprovalVotes.length;
@@ -153,23 +156,25 @@ if (selectedCircle.LoanRequest.length > 0) {
 // console.log(loanRequest);
     
     //Check if the user is in debt
-    const userd = await User.findOne({number:phoneNumber});
-    const borrowerNumb = userd.number;
-    const userDebt = selectedCircle.LoanBalance.findIndex((member) => member.BorrowerNumber ===  borrowerNumb);
-    // console.log(JSON.stringify(selectedCircle.LoanBalance))
-    const loanBalances = Object.values(selectedCircle.LoanBalance);
-    const amount1 = loanBalances.reduce((sum, member) => sum + member.LoanAmount,0);
-    const amount2 = loanBalances.reduce((sum, member) => sum + member.LoanInterest,0);
-    const totalpayment= amount1 + amount2;
+const userd = await User.findOne({number:phoneNumber});
+const borrowerNumb = userd.number;
+const userDebt = selectedCircle.LoanBalance.find((member) => member.BorrowerNumber ===  borrowerNumb);
 
-    if (userDebt) {
-     
-      response = `CON 
-        ${selectedCircle.GroupName} - ${totalpayment}
-        r. Repay Balance
-      `;
-      return response;
-    } else {
+const Loan = Object.values(selectedCircle.LoanBalance);
+const totalBalance = Loan.reduce((sum, member) => sum + member.LoanAmount,0);
+
+const Interest= Object.values(selectedCircle.LoanBalance);
+const totalBalances = Interest.reduce((sum, member) => sum + member.LoanInterest,0);
+
+const totalpayment =totalBalance + totalBalances;
+
+if (userDebt) {
+  response = `CON 
+    ${selectedCircle.GroupName} - ${totalpayment}
+    r. Repay Balance
+  `;
+  return response;
+}else {
       const selectedCircleIndex = parseInt(textArray[1]) - 1;
 const userCircles = await Savings.find({ 
   $or: [
@@ -664,18 +669,26 @@ if (level === 3 && textArray[2] === '3') {
     return response;
   }
 
+  let totalContributed = 0;
+  let totalEarned = 0;
+
   for (let i = 0; i < selected.MemberContribution.length; i++) {
     const member = selected.MemberContribution[i];
-    const total = member.Contributed + member.Earnings;
+    totalContributed += member.Contributed;
+    totalEarned += member.Earnings;
 
-    response = `CON 
-                Total Contributions: K${member.Contributed}
-                Interest Earned: K${member.Earnings}
-                ______________________________
-                Total Balance = K${total}
-             `;
-    return response;
+    totalAvailable = totalEarned + totalContributed;
   }
+  
+  response = `CON 
+              Total Contributions: K${totalContributed}
+              Interest Earned: K${totalEarned}
+              _________________________________
+              Total Balance = K${totalAvailable}
+              `;
+  return response;
+
+
 }
 
 
@@ -697,18 +710,21 @@ if (level === 3 && textArray[2] === '4') {
     return response;
   }
 
+  let response = "CON Loan Balances:\n";
   for (let i = 0; i < selected.LoanBalance.length; i++) {
     const member = selected.LoanBalance[i];
     const total = member.LoanInterest + member.LoanAmount;
-
-    response = `CON 
-                  ${member.Name}                   
-                1. Loan Balance: K${total}
-                2. Earned: K${member.LoanInterest}  
-             `;
-    return response;
+  
+    response += `
+        ${member.Name}                   
+        1. Loan Balance: K${total}
+        2. Earned: K${member.LoanInterest}  
+    `;
   }
-}
+  
+  return response;
+  
+}  
 
 
 if (level === 3 && textArray[2] === "r") {

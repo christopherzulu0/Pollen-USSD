@@ -153,11 +153,11 @@ const UserSchema = mongoose.Schema({
         default: 0
       },
       ApprovalVotes: {
-        type: [String],
+        type: [Number],
         default: []
       },
       RejectionVotes: {
-        type: [String],
+        type: [Number],
         default: []
       },
       Approved: {
