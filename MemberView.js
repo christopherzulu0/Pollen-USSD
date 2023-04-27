@@ -54,7 +54,15 @@ const handleMember = async (textArray, phoneNumber) => {
     return response;
   }if (level === 1) {
     // Show a list of circles the user belongs to
-    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const userCircles = await Savings.find({
+      $or: [
+        { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+        { 'GroupMembers.Creator': phoneNumber },
+        { 'GroupMembers.AdminNumber1': phoneNumber },
+        { 'GroupMembers.AdminNumber2': phoneNumber }
+      ]
+    });
+    
 
     if (!userCircles.length) {
       response = `CON 
@@ -77,7 +85,14 @@ const handleMember = async (textArray, phoneNumber) => {
   if (level === 2) {
     // Show the details of the selected circle
     const selectedCircleIndex = parseInt(textArray[1]) - 1;
-    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const userCircles = await Savings.find({ 
+      $or: [
+        { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+        { 'GroupMembers.Creator': phoneNumber },
+        { 'GroupMembers.AdminNumber1': phoneNumber },
+        { 'GroupMembers.AdminNumber2': phoneNumber }
+      ]
+     });
     const selectedCircle = userCircles[selectedCircleIndex];
 
   
@@ -158,21 +173,33 @@ if (selectedCircle.LoanRequest.length > 0) {
       return response;
     } else {
       const selectedCircleIndex = parseInt(textArray[1]) - 1;
-const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+const userCircles = await Savings.find({ 
+  $or: [
+    { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+    { 'GroupMembers.Creator': phoneNumber },
+    { 'GroupMembers.AdminNumber1': phoneNumber },
+    { 'GroupMembers.AdminNumber2': phoneNumber }
+  ]
+});
 const selected = userCircles[selectedCircleIndex];
 
 // Push user to InDebtMembers with an initial debt amount of 0
 const circleBalances = Object.values(selected.circleBalance);
 const totalBalance = circleBalances.reduce((sum, member) => sum + member.Balance,0);
 
+const contributions = Object.values(selected.MemberContribution);
+const TotalEarned =contributions.reduce((sum, member) => sum + member.Earnings,0);
 
+const allTotal = totalBalance + TotalEarned;
 response = `CON 
   ${selected.GroupName} - $ ${totalBalance}
+  Earned(${TotalEarned}) + Contributed(${totalBalance}) 
+  = K${allTotal}
   1. Deposit Fund
   2. Request Loan
   3. Group Balances
   4. Loan Balance
-  5. Other Actions 
+  5. Other Actions (Admins Only)
 `;
     }
     
@@ -182,7 +209,14 @@ response = `CON
   }
   if (level === 3 && textArray[2] === '1' ) {
     const selectedCircleIndex = parseInt(textArray[1]) - 1;
-    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const userCircles = await Savings.find({ 
+      $or: [
+        { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+        { 'GroupMembers.Creator': phoneNumber },
+        { 'GroupMembers.AdminNumber1': phoneNumber },
+        { 'GroupMembers.AdminNumber2': phoneNumber }
+      ]
+     });
     const selectedCircle = userCircles[selectedCircleIndex];
   
 
@@ -213,7 +247,14 @@ response = `CON
   
   if (level === 4 && textArray[2] === '1') {
     const selectedCircleIndex = parseInt(textArray[1]) - 1;
-    const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+    const userCircles = await Savings.find({ 
+      $or: [
+        { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+        { 'GroupMembers.Creator': phoneNumber },
+        { 'GroupMembers.AdminNumber1': phoneNumber },
+        { 'GroupMembers.AdminNumber2': phoneNumber }
+      ]
+    });
     const selectedCircle = userCircles[selectedCircleIndex];
     
     const depositAmount = parseFloat(textArray[3]);
@@ -256,7 +297,14 @@ response = `CON
     
       if (user.pin === enteredPin) {
         const selectedCircleIndex = parseInt(textArray[1]) - 1;
-        const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+        const userCircles = await Savings.find({ 
+          $or: [
+            { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+            { 'GroupMembers.Creator': phoneNumber },
+            { 'GroupMembers.AdminNumber1': phoneNumber },
+            { 'GroupMembers.AdminNumber2': phoneNumber }
+          ]
+         });
         const selectedCircle = userCircles[selectedCircleIndex];
     
         const depositAmount = parseFloat(textArray[3]);
@@ -358,6 +406,9 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
   const userCircles = await Savings.find({
     $or: [
       { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber },
       { 'LoanRequest.BorrowerNumber': phoneNumber }
     ]
   });
@@ -438,7 +489,14 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
 
 if (level === 3 && textArray[2] == 'a' ) {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const userCircles = await Savings.find({ 
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+   });
   const selectedCircle = userCircles[selectedCircleIndex];
   const loanRequest = selectedCircle.LoanRequest.find((id) => id._id === id._id);
 
@@ -490,6 +548,7 @@ if (level === 3 && textArray[2] == 'a' ) {
       }
 
       selectedCircle.circleBalance[borrowerIndex].Balance -= loanAmount;
+      selectedCircle.MemberContribution[borrowerIndex].Contributed -= loanAmount;
       const borrower = await Wallet.findOneAndUpdate(
         { MemberPhoneNumber: loanRequest.BorrowerNumber },
         { $inc: { balance: loanAmount } },
@@ -535,7 +594,14 @@ if (level === 3 && textArray[2] == 'a' ) {
 
 if (level === 3 && textArray[2] == 'b' ) {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const userCircles = await Savings.find({ 
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+   });
   const selectedCircle = userCircles[selectedCircleIndex];
   const loanRequest = selectedCircle.LoanRequest.find((id) => id._id === id._id);
   console.log(loanRequest)
@@ -583,7 +649,14 @@ if (level === 3 && textArray[2] == 'b' ) {
 
 if (level === 3 && textArray[2] === '3') {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const userCircles = await Savings.find({ 
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+   });
   const selected = userCircles[selectedCircleIndex];
 
   if (selected.MemberContribution.length === 0) {
@@ -609,7 +682,14 @@ if (level === 3 && textArray[2] === '3') {
 
 if (level === 3 && textArray[2] === '4') {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const userCircles = await Savings.find({ 
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+   });
   const selected = userCircles[selectedCircleIndex];
 
   if (selected.LoanBalance.length === 0) {
@@ -634,7 +714,14 @@ if (level === 3 && textArray[2] === '4') {
 
 if (level === 3 && textArray[2] === "r") {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+  const userCircles = await Savings.find({ 
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+   });
   const selectedCircle = userCircles[selectedCircleIndex];
   const selected = userCircles[selectedCircleIndex];
 
@@ -666,6 +753,7 @@ if (level === 3 && textArray[2] === "r") {
      const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === selectedCircleIdString);
 
      selected.circleBalance[memberIndex2].Balance += repaymentAmount;
+     selectedCircle.MemberContribution[memberIndex2].Contributed += repaymentAmount;
      await selected.save();
  
      // Remove the loan balance entry
@@ -691,8 +779,80 @@ if (level === 3 && textArray[2] === "r") {
   return response;
 }
 
+if (level === 3 && textArray[2] === '5') {
+  async function confirmDetails() {
+    let user = await Savings.findOne({
+      $or: [
+        { AdminNumber1: phoneNumber },
+        { AdminNumber2: phoneNumber },
+        { Creator: phoneNumber },
+      ],
+    });
+    return user;
+  }
 
+  // Assigns the user to a variable for manipulation
+  let Admin = await confirmDetails();
 
+  if (Admin) {
+    response = `CON 
+      1.Invite Members
+      2.Delete User
+      3.Delete Circle
+    `;
+    return response;
+  } else if(!Admin) {
+    response = `END Only Admins can access this area!`;
+    return response;
+  }
+
+}if(level === 4 && textArray[3] === '1'){
+  response = `CON Enter the number you want to invite to the circle`;
+  return response;
+} else if (level == 5 ) {
+    let circleMember = textArray[4];
+    console.log(circleMember)
+  let user = await Savings.findOne({
+    $or: [
+      { AdminNumber1: phoneNumber },
+      { AdminNumber2: phoneNumber },
+      { Creator: phoneNumber },
+    ],
+  });
+  let code = user.GroupCode;
+  let name = user.GroupName;
+
+  await Savings.findOneAndUpdate(
+    { GroupCode: code },
+    { $push: { InvitedMembers: { InvitedNumber: +26+textArray[4] } } },
+    { new: true, upsert: true }
+  ); 
+  response = `CON ${circleMember}, has been invited to join ${name} and added to the invite list`;
+  return response;
+}if(level === 4 && textArray[3]  === '2' ){
+  response = `CON Enter a member phone number to delete`;
+  return response;
+}else if(level === 5){
+  const selectedCircleIndex = parseInt(textArray[1]) - 1;
+  const userCircles = await Savings.find({
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+  });
+  const selectedCircle = userCircles[selectedCircleIndex];
+
+  const memberToRemove = textArray[4];
+  const updatedGroupMembers = selectedCircle.GroupMembers.filter(
+    (member) => member.MemberPhoneNumber != memberToRemove
+  );
+
+  await selectedCircle.updateOne({ GroupMembers: updatedGroupMembers });
+  response = `END ${memberToRemove} has been removed from the circle.`;
+  return response;
+}
   // Handle join circle and create circle options here
   // ...
 

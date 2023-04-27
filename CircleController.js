@@ -28,7 +28,7 @@ const CircleController = {
     let user = await confirmDetails();
   
     if (user) {
-      return handleAdmin(textArray, phoneNumber);
+      return handleMember(textArray, phoneNumber);
     }
   
     const member = await Savings.findOne({
