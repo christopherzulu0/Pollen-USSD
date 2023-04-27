@@ -146,10 +146,8 @@ if (selectedCircle.LoanRequest.length > 0) {
       return response;
     }
   }
-} else {
-  console.log('No loan requests found.');
-}
-
+} 
+ 
 
 
 // console.log(loanRequest);
@@ -206,6 +204,7 @@ response = `CON
     
     // ... other circle details
     return response;
+
   }
   if (level === 3 && textArray[2] === '1' ) {
     const selectedCircleIndex = parseInt(textArray[1]) - 1;
