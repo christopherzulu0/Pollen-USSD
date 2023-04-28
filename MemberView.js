@@ -157,6 +157,7 @@ if (selectedCircle.LoanRequest.length > 0) {
     
     //Check if the user is in debt
 const userd = await User.findOne({number:phoneNumber});
+const names = userd.FirstName;
 const borrowerNumb = userd.number;
 const userDebt = selectedCircle.LoanBalance.find((member) => member.BorrowerNumber ===  borrowerNumb);
 
@@ -170,7 +171,7 @@ const totalpayment =totalBalance + totalBalances;
 
 if (userDebt) {
   response = `CON 
-     ${selectedCircle.GroupName} - ${totalpayment}
+    ${names},you owe ${selectedCircle.GroupName} an amount of K${totalpayment}.kindly repay the loan to proceed.
     r. Repay Balance
   `;
   return response;
