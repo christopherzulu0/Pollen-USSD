@@ -170,7 +170,7 @@ const totalpayment =totalBalance + totalBalances;
 
 if (userDebt) {
   response = `CON 
-    ${selectedCircle.GroupName} - ${totalpayment}
+     ${selectedCircle.GroupName} - ${totalpayment}
     r. Repay Balance
   `;
   return response;
@@ -430,19 +430,6 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
   }
 
 
-
-
-
-      // const hasExistingLoanRequest = LoanBalance.find({BorrowerNumber:phoneNumber});
-
-      // if (hasExistingLoanRequest) {
-      //   response = `CON 
-      //     You already have a pending balance.Pay to apply for another loan.
-      //   `;
-      //   return response;
-      // }
-
-
  // Check if the user has enough savings in the circle to request the loan
   const totalBalance = selectedCircle.circleBalance?.reduce(
     (sum, member) => sum + member.Balance,
@@ -665,7 +652,7 @@ if (level === 3 && textArray[2] === '3') {
 
   if (selected.MemberContribution.length === 0) {
     // If MemberContribution array has no data, display "No contributions"
-    response = "CON No contributions";
+   const  response = "CON No contributions";
     return response;
   }
 
@@ -693,6 +680,8 @@ if (level === 3 && textArray[2] === '3') {
 
 
 if (level === 3 && textArray[2] === '4') {
+  
+
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
   const userCircles = await Savings.find({ 
     $or: [
@@ -706,7 +695,7 @@ if (level === 3 && textArray[2] === '4') {
 
   if (selected.LoanBalance.length === 0) {
     // If LoanBalance array has no data, display "No loan balances"
-    response = "CON No loan balances";
+   const response = `CON No loan balances`;
     return response;
   }
 
