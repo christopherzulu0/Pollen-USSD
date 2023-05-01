@@ -60,20 +60,28 @@ router.post("/", (req, res) => {
       let userName;
       let userRegistered;
       let response = "";
+      let incurred = "";
+      let loan = ""
 
       if (!user) {
         userRegistered = false;
-      } else {
+      }else {
         userRegistered = true;
         userName = user.FirstName;
+      
+        num = user.number;
+        loan = await Savings.findOne({'LoanBalance.BorrowerNumber':num});
+         incurred = loan ? loan.LoanBalance.find(balance => balance.BorrowerNumber === num).LoanAmount : 0;
+        
       }
+      
 
       
       
 
       // MAIN LOGIC
       if (text == "" && userRegistered == true) {
-        response = MainMenu(userName);
+        response = MainMenu(userName,incurred);
       } else if (text == "" && userRegistered == false) {
         response = unregisteredMenu();
       } else if (text != "" && userRegistered == false) {

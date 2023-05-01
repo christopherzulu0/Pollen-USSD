@@ -64,18 +64,20 @@ const sendSMS2 = async (phoneNumber, message) => {
 
 
 const menu = {
-  MainMenu: (userName) => {
-    const response = `CON Welcome ${userName}, which action you wish to perform ?
-            1. Circle Savings
-            2. Personal Savings
-            3. View Balances
-            4. Payments
-            5. Deposit/Withdraw from Momo
-            6. Help
-
-            `;
-
+  MainMenu: (userName,incurred) => {
+    const response = `CON Welcome Back! ${userName}
+                          Loan Balance: K${incurred}
+                          Please choose an option:
+                          1. Circle Savings
+                          2. Personal Savings
+                          3. View Balances
+                          4. Payments
+                          5. Deposit/Withdraw from Momo
+                          6. Help
+    
+                          `;
     return response;
+    
   },
   unregisteredMenu: () => {
     const response = `CON Welcome to Pollen. The best Open Village Banking platform in Zambia.

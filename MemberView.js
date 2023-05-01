@@ -196,15 +196,16 @@ const TotalEarned =contributions.reduce((sum, member) => sum + member.Earnings,0
 
 const allTotal = totalBalance + TotalEarned;
 response = `CON 
-  ${selected.GroupName} - $ ${totalBalance}
-  Earned(${TotalEarned}) + Contributed(${totalBalance}) 
-  = K${allTotal}
-  1. Deposit Fund
-  2. Request Loan
-  3. Group Balances
-  4. Loan Balance
-  5. Other Actions (Admins Only)
-`;
+              ${selected.GroupName} Group
+              Circle Balance: <u>K${totalBalance}</u>
+             Interest Earned:  <u>K${TotalEarned}</u> 
+              Total Balance = <u>K${allTotal}</u>
+              1. Deposit Fund
+              2. Request Loan
+              3. Group Balances
+              4. Loan Balance
+              5. Other Actions (Admins Only)
+            `;
     }
     
     
