@@ -151,40 +151,8 @@ if (selectedCircle.LoanRequest.length > 0) {
   }
 } 
  
-
-
 // console.log(loanRequest);
-    
-    //Check if the user is in debt
-const userd = await User.findOne({number:phoneNumber});
-const names = userd.FirstName;
-const borrowerNumb = userd.number;
-const userDebt = selectedCircle.LoanBalance.find((member) => member.BorrowerNumber ===  borrowerNumb);
-
-const Loan = Object.values(selectedCircle.LoanBalance);
-const totalBalance = Loan.reduce((sum, member) => sum + member.LoanAmount,0);
-
-const Interest= Object.values(selectedCircle.LoanBalance);
-const totalBalances = Interest.reduce((sum, member) => sum + member.LoanInterest,0);
-
-const totalpayment =totalBalance + totalBalances;
-
-if (userDebt) {
-  response = `CON 
-    ${names},you owe ${selectedCircle.GroupName} an amount of K${totalpayment}.kindly repay the loan to proceed.
-    r. Repay Balance
-  `;
-  return response;
-}else {
-      const selectedCircleIndex = parseInt(textArray[1]) - 1;
-const userCircles = await Savings.find({ 
-  $or: [
-    { 'GroupMembers.MemberPhoneNumber': phoneNumber },
-    { 'GroupMembers.Creator': phoneNumber },
-    { 'GroupMembers.AdminNumber1': phoneNumber },
-    { 'GroupMembers.AdminNumber2': phoneNumber }
-  ]
-});
+  
 const selected = userCircles[selectedCircleIndex];
 
 // Push user to InDebtMembers with an initial debt amount of 0
@@ -195,6 +163,21 @@ const contributions = Object.values(selected.MemberContribution);
 const TotalEarned =contributions.reduce((sum, member) => sum + member.Earnings,0);
 
 const allTotal = totalBalance + TotalEarned;
+
+
+const userd = await User.findOne({number:phoneNumber});
+const names = userd.FirstName;
+const borrowerNumb = userd.number;
+const userDebt = selectedCircle.LoanBalance.find((member) => member.BorrowerNumber ===  borrowerNumb);
+
+const Loan = Object.values(selectedCircle.LoanBalance);
+const totalBalanced = Loan.reduce((sum, member) => sum + member.LoanAmount,0);
+
+const Interest= Object.values(selectedCircle.LoanBalance);
+const totalBalances = Interest.reduce((sum, member) => sum + member.LoanInterest,0);
+
+const totalpayment =totalBalanced  + totalBalances;
+
 response = `CON 
               ${selected.GroupName} Group
               Circle Balance: <u>K${totalBalance}</u>
@@ -205,8 +188,9 @@ response = `CON
               3. Group Balances
               4. Loan Balance
               5. Other Actions (Admins Only)
+              6. Repay Loan(K${totalpayment})
             `;
-    }
+    
     
     
     // ... other circle details
@@ -394,13 +378,29 @@ response = `CON
     
     
   
-  if (level === 3 && textArray[2] === '2' ) {
-      response = `CON Why do you need a loan?
-                  Write a description..
-                `;
-      return response;
+    if (level === 3 && textArray[2] === '2') {
+      // Check if user has a LoanBalance
+      const user = await User.findOne({ number: phoneNumber });
+      const nums = user.number;
+      loan = await Savings.findOne({'LoanBalance.BorrowerNumber': nums});
+      balance = loan ? loan.LoanBalance.find(balance => balance.BorrowerNumber === nums).LoanAmount : 0;
+      interest = loan ? loan.LoanBalance.find(balance => balance.BorrowerNumber === nums).LoanInterest : 0;
+      
+      const totals = balance + interest;
+
+      if (balance) {
+        response = `END You still owe k${totals}.Repay the loan to continue.`;
+        return response;
+      }
+      
     
-  } 
+      // Proceed with loan request
+      response = `CON Why do you need a loan?
+      Write a description..
+      `;
+      return response;
+    }
+     
   if (level === 4 && textArray[2] === '2' ) {
     response = `CON Enter the amount you want to borrow
               `;
@@ -718,7 +718,7 @@ if (level === 3 && textArray[2] === '4') {
 }  
 
 
-if (level === 3 && textArray[2] === "r") {
+if (level === 3 && textArray[2] === "6") {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
   const userCircles = await Savings.find({ 
     $or: [

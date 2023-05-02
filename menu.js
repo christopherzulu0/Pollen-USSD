@@ -64,9 +64,9 @@ const sendSMS2 = async (phoneNumber, message) => {
 
 
 const menu = {
-  MainMenu: (userName,incurred) => {
+  MainMenu: (userName,total) => {
     const response = `CON Welcome Back! ${userName}
-                          Loan Balance: K${incurred}
+                          Loan Balance: K${total}
                           Please choose an option:
                           1. Circle Savings
                           2. Personal Savings
@@ -476,14 +476,14 @@ const menu = {
       Your savings balance $${savingsbalance.balance}
       `;
 
-      const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
-
-    // if (!userCircles.length) {
-    //   response = `CON 
-    //   You don't belong to any circle.
-    //   `;
-    //   return response;
-    // }
+      const userCircles = await Savings.find({ 
+        $or: [
+          { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+          { 'GroupMembers.Creator': phoneNumber },
+          { 'GroupMembers.AdminNumber1': phoneNumber },
+          { 'GroupMembers.AdminNumber2': phoneNumber }
+        ]
+       });
 
     response += `
     Select a circle to view balance :\n`;
@@ -494,13 +494,34 @@ const menu = {
       return response;
     }if (level === 2) {
       const selectedCircleIndex = parseInt(textArray[1]) - 1;
-      const userCircles = await Savings.find({ 'GroupMembers.MemberPhoneNumber': phoneNumber });
+      const userCircles = await Savings.find({ 
+        $or: [
+          { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+          { 'GroupMembers.Creator': phoneNumber },
+          { 'GroupMembers.AdminNumber1': phoneNumber },
+          { 'GroupMembers.AdminNumber2': phoneNumber }
+        ]
+       });
       const selectedCircle = userCircles[selectedCircleIndex];
+
+      if (!selectedCircle) {
+        response = `END Invalid circle input. Please select a valid circle number.`;
+        return response;
+      }
     
        //Get the balance for the selectedCircle
       const circleBalance =selectedCircle ? selectedCircle.circleBalance[0].Balance : 0;
+
+      const contributions = Object.values(selectedCircle.MemberContribution);
+      const TotalEarned =contributions.reduce((sum, member) => sum + member.Earnings,0);
+      const allTotal = circleBalance + TotalEarned;
     
-      response = `END Your circle balance is:${circleBalance}\n`;
+      response = `END 
+                  Circle Balance: K${circleBalance}
+                  Interest Earned:  K${TotalEarned} 
+                  Total Balance = K${allTotal}
+                  
+                  `;
       return response;
     }
    
