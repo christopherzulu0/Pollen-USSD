@@ -183,24 +183,24 @@ const totalpayment =totalBalanced  + totalBalances;
 
 if (userDebt) {
   response = `CON 
-    ${selected.GroupName} Group
-    Balance: <u>K${totalBalance}</u>
-    Lent Out: <u>K${LentOut}</u>
-    Interest Earned: <u>K${totalInterest}</u>
+    <b>${selected.GroupName} Group</b>
+    Balance: <u><b>K${totalBalance}</b></u>
+    Lent Out: <u><b>K${LentOut}</b></u>
+    Interest Earned: <u> <b>${totalInterest}%</b></u>
     1. Deposit Fund
     2. Request Loan
     3. Group Balances
     4. Loan Balance
     5. Other Actions (Admins Only)
-    6. Repay Loan(K${totalpayment})
+    6. Repay Loan(<b>K${totalpayment}</b>)
   `;
    return response;
 } else {
   response = `CON 
-    ${selected.GroupName} Group
-    Balance: <u>K${totalBalance}</u>
+  <b>${selected.GroupName} Group</b>
+    Balance: <u>K<b>${totalBalance}</b></u>
     Lent Out: <u>K${LentOut}</u>
-    Interest Earned: <u>K${totalInterest}</u>
+    Interest Earned: <u><b>${totalInterest}%</b></u>
     1. Deposit Fund
     2. Request Loan
     3. Group Balances
@@ -245,7 +245,8 @@ if (userDebt) {
     response = `CON 
       Deposit funds to ${selectedCircle.GroupName}
       Available to deposit:
-      $ ${balance}`;
+      $ <b>${balance}</b>
+      `;
   
     return  response;
   }
@@ -279,7 +280,7 @@ if (userDebt) {
     // Check if the deposit amount is greater than the user's wallet balance or if it is equal to 0
     if (depositAmount > userWallet.balance || depositAmount === 0) {
       response = `CON 
-        Insufficient funds or invalid deposit amount. Your wallet balance is $${userWallet.balance}.
+        Insufficient funds or invalid deposit amount. Your wallet balance is $<b>${userWallet.balance}</b>.
         Please enter a valid deposit amount:
         $`;
       return response;
@@ -376,7 +377,7 @@ if (userDebt) {
     
         // Display success message to the user
         response = `END 
-          Your Deposit of $${depositAmount} was successful to ${selectedCircle.GroupName}. Your new balance in ${selectedCircle.GroupName}.
+          Your Deposit of $<b>${depositAmount}</b> was successful to <b>${selectedCircle.GroupName}</b>.
           You will receive an sms if we encounter any issues.
         `;
     
@@ -456,7 +457,7 @@ if (level === 5 && textArray[2] === '2' && textArray[3] && textArray[4]) {
   
   if (loanAmount > totalBalance) {
     response = `CON 
-      Insufficient savings in the circle to request a loan. Your available savings is $${totalBalance}.
+      Insufficient savings in the circle to request a loan. Your available savings is $<b>${totalBalance}</b>.
       Please enter a valid loan amount:
       $`;
     return response;
@@ -689,10 +690,10 @@ if (level === 3 && textArray[2] === '3') {
   }
   
   response = `CON 
-              Total Contributions: K${totalContributed}
-              Contribution Interest: K${totalEarned}
-              _________________________________
-              Total Balance = K${totalAvailable}
+              Total Contributions: <b>K${totalContributed}</b>
+              Contribution Interest: <b>K${totalEarned}</b>
+              _____________________________________
+              Total Balance = <b>K${totalAvailable}</b>
               `;
   return response;
 
@@ -727,8 +728,8 @@ if (level === 3 && textArray[2] === '4') {
   
     response += `
         ${member.Name}                   
-        1. Loan Balance: K${total}
-        2. Loan Interest: K${member.LoanInterest}  
+        1. Loan Balance: <b>K${total}</b>
+        2. Loan Interest: <b>K${member.LoanInterest}</b>  
     `;
   }
   
@@ -798,7 +799,7 @@ if (level === 3 && textArray[2] === "6") {
     // Call the updateLoanPayment() function to update loan payment status and payment date
     // await updateLoanPayment(selectedCircle._id); // Pass the circle ID to the function
 
-    response = `END Repayment of $${repaymentAmount} successful. Your loan balance has been cleared.`;
+    response = `END Repayment of $<b>${repaymentAmount}</b> successful. Your loan balance has been cleared.`;
   } else {
     response = `END Insufficient balance. Your wallet balance is not enough to repay the loan.`;
     return response;
@@ -855,7 +856,7 @@ if (level === 3 && textArray[2] === '5') {
     { $push: { InvitedMembers: { InvitedNumber: +26+textArray[4] } } },
     { new: true, upsert: true }
   ); 
-  response = `CON ${circleMember}, has been invited to join ${name} and added to the invite list`;
+  response = `CON ${circleMember}, has been invited to join <b>${name}</b> and added to the invite list`;
   return response;
 }if(level === 4 && textArray[3]  === '2' ){
   response = `CON Enter a member phone number to delete`;

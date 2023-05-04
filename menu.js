@@ -66,7 +66,7 @@ const sendSMS2 = async (phoneNumber, message) => {
 const menu = {
   MainMenu: (userName,total) => {
     const response = `CON Welcome Back! ${userName}
-                          Loan Balance: K${total}
+                          Loan Balance: <b>K${total}</b>
                           Please choose an option:
                           1. Circle Savings
                           2. Personal Savings
