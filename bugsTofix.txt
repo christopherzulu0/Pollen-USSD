@@ -1,11 +1,22 @@
-Registration
-= Message sending to the wrong number
-
- SendMoney
-= Apply charges
-= Allow to send money to ther user , even if the wallet is empty
-= Show available wallet balance
-= send an sms to both sender and receiver
-= Two factor authentication
+app/Providers/ConfigServiceProvider
+resources/views/admin-views/business-settings/payment-index.blade.php
+app/http/Controllers/Admin/BusinessSettingsController.php
 
 
+
+https://mis.thesavix.org/dashboard/admin
+* Interest should only accrue after loan is repaid
+* Should be able to repay an amount less than total loan amount
+* Don’t show repay loan option unless user is in debt
+* Proposal voting should say who submitted the request (and what there balance is)
+
+
+Circle name
+Balance: K1000
+Lent out: K650
+Interest earned: K83
+
+
+
+https://static1.squarespace.com/static/6216b8c7e65cbe18691113c6/t/64412a5a4e7f16289ba748ab/1681992283559/EOI+ATI-+002_Digital+Finance+Co-Creation+Partnerships%2C+Zambia.pdf
+260 97 7654321

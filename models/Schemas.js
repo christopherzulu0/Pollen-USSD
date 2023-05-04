@@ -147,6 +147,10 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true
       },
+     Name: {
+        type: String,
+        required: true
+      },
       LoanAmount: {
         type: Number,
         required: true,
@@ -231,7 +235,12 @@ const UserSchema = mongoose.Schema({
           required: true,
           default: 0,
           ref: 'Transaction'
-        }
+        },
+        LoanInterest: {
+          type: Number,
+          required: false,
+          default: 0
+        },
       }
     ],
     GroupMembers: [{
