@@ -1,6 +1,37 @@
 const mongoose = require('mongoose');
 const shortid = require('shortid');
+const cron = require('node-cron');
 
+async function updateDaysRemaining() {
+  const currentDate = new Date();
+  const activeLoanRequests = await Savings.find({
+    'LoanBalance.Status': 'Approved',
+    'LoanBalance.dueDate': { $gte: currentDate },
+  });
+
+  activeLoanRequests.forEach((circle) => {
+    circle.LoanBalance.forEach((loanRequest) => {
+      const daysRemaining = Math.ceil(
+        (loanRequest.dueDate - currentDate) / (1000 * 60 * 60 * 24)
+      );
+      loanRequest.daysRemaining = daysRemaining;
+    });
+
+    circle.save();
+  });
+}
+
+// Schedule the task to run at midnight (00:00) every day
+cron.schedule('0 0 * * *', () => {
+  updateDaysRemaining();
+});
+
+// const scheduledTask = cron.schedule('*/1 * * * *', () => {
+//   updateDaysRemaining();
+//   scheduledTask.stop(); // Stop the task after it has run once
+// });
+
+// No need to call any additional method to start the background task
 
 
 const transactionSchema = new mongoose.Schema({
@@ -203,6 +234,23 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true
       },
+      Status: {
+        type: String,
+        enum: ['Pending', 'Approved', 'Rejected', 'Pending Admin Approval'],
+        default: 'Pending'
+      },
+      disbursedDate: {
+        type: Date,
+        default: null
+      },
+      dueDate: {
+        type: Date,
+        default: null
+      },
+      daysRemaining :{
+        type: Number,
+        default: null
+      }
      
     }],
     MemberContribution: [{

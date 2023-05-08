@@ -562,6 +562,23 @@ if (level === 3 && textArray[2] == 'a' ) {
 
       selectedCircle.circleBalance[borrowerIndex].Balance -= loanAmount;
       selectedCircle.MemberContribution[borrowerIndex].Contributed -= loanAmount;
+
+            // Set the loan disbursed date
+      const disbursedDate = new Date();
+      loanRequest.disbursedDate = disbursedDate;
+
+      // Set the loan due date
+      const dueDate = new Date();
+      dueDate.setMonth(dueDate.getMonth() + 1); // Set the due date to one month from the disbursed date
+      loanRequest.dueDate = dueDate;
+      
+      // Calculate the number of days remaining until the due date
+      const currentDate = new Date();
+      const timeDifference = dueDate.getTime() - currentDate.getTime();
+      const daysRemaining = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+      // Save the updated loanRequest object
+      await selectedCircle.save();
+
       const borrower = await Wallet.findOneAndUpdate(
         { MemberPhoneNumber: loanRequest.BorrowerNumber },
         { $inc: { balance: loanAmount } },
@@ -584,13 +601,18 @@ if (level === 3 && textArray[2] == 'a' ) {
           LoanAmount: loanAmount,
           LoanInterest:simpleInterestFormatted,
           Name: users.FirstName,
+          Status: loanRequest.Status = 'Approved',
+          disbursedDate: disbursedDate,
+          dueDate: dueDate,
+          daysRemaining :daysRemaining 
         };
         console.log(loanBalance)
         selectedCircle.LoanBalance.push(loanBalance);
         
 
-      const loanIndex = selectedCircle.LoanRequest.findIndex((id) => id._id === loanRequest._id);
-      selectedCircle.LoanRequest.splice(loanIndex, 1);
+        const loanIndex = selectedCircle.LoanRequest.findIndex((id) => id._id === loanRequest._id);
+        selectedCircle.LoanRequest.splice(loanIndex, 1);
+        
 
       await selectedCircle.save();
       response = `END Loan request has been approved by a majority of group members.`;
