@@ -64,6 +64,12 @@ router.post("/", (req, res) => {
       let loan = ""
       let interest = ""
       let total = ""
+      let daysRemaining =""
+      let calculate = ""
+      let currentDate= ""
+      let dueDate = ""
+      let timeDifference = ""
+      let days =""
 
       if (!user) {
         userRegistered = false;
@@ -74,9 +80,16 @@ router.post("/", (req, res) => {
         num = user.number;
         loan = await Savings.findOne({'LoanBalance.BorrowerNumber':num});
         incurredLoan = loan ? loan.LoanBalance.find(balance => balance.BorrowerNumber === num) : null;
-        incurred = incurredLoan ? incurredLoan.LoanAmount : 0;
-        interest = incurredLoan ? incurredLoan.LoanInterest : 0;
-        total = incurred + interest;
+        incurred = incurredLoan ? incurredLoan.totalLoan : 0;
+        total = incurred;
+      
+        days = incurredLoan ? incurredLoan.daysRemaining : 0;
+       daysRemaining =days;
+     
+
+       
+
+
          
       }
       
@@ -86,7 +99,7 @@ router.post("/", (req, res) => {
 
       // MAIN LOGIC
       if (text == "" && userRegistered == true) {
-        response = MainMenu(userName,total);
+        response = MainMenu(userName,total,incurred,daysRemaining);
       } else if (text == "" && userRegistered == false) {
         response = unregisteredMenu();
       } else if (text != "" && userRegistered == false) {

@@ -230,6 +230,11 @@ const UserSchema = mongoose.Schema({
         required: true,
         default: 0
       },
+      totalLoan:{
+        type: Number,
+        required: true,
+        default:0
+      },
       Name: {
         type: String,
         required: true

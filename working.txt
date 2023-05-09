@@ -182,3 +182,30 @@ Loan Repayment
 
 Wallet: 5300
 circleBalance: k600
+
+
+
+FIXES
+
+VIEW BALANCE MENU
+It must be showing the following:
+1) wallet balance 
+2) saving balance 
+
+Group Balance. 
+1) Alexa 
+[Group balance: K 
+Your contribution: K 
+Penalties: K 
+Interested earned(by the Individuals): K
+]
+
+
+
+MAIN MENU(we need pop up messages for)
+1) pending notifications on proposals ( something like: messages/ notifications (2) alexa (3) pollen dev)
+
+NB: These two pop up should  only be appearing if there a pending debt due, and pending proposals to vote
+    => Remember, if the loan isn't repayed or partially repaired. 
+       There will be a penalty of the some amount. The means whatever the person contributed,
+       the penalty will be deducted from his total person contribution

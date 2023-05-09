@@ -64,7 +64,9 @@ const sendSMS2 = async (phoneNumber, message) => {
 
 
 const menu = {
-  MainMenu: (userName,total) => {
+  MainMenu: (userName,total,daysRemaining) => {
+   // Loan due in: <b>${daysRemaining} Days</b>
+    
     const response = `CON Welcome Back! ${userName}
                           Loan Balance: <b>K${total}</b>
                           Please choose an option:

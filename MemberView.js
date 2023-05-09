@@ -160,7 +160,8 @@ const selected = userCircles[selectedCircleIndex];
 // Push user to InDebtMembers with an initial debt amount of 0
 const circleBalances = Object.values(selected.circleBalance);
 const totalBalance = circleBalances.reduce((sum, member) => sum + member.Balance,0);
-const totalInterest = circleBalances.reduce((sum, member) => sum + member.LoanInterest,0);
+const totalInterest = circleBalances.reduce((sum, member) => sum + member.LoanInterest, 0);
+const totalInterestPercentage = (totalInterest * 100).toFixed(2) + "%";
 
 const contributions = Object.values(selected.MemberContribution);
 const TotalEarned =contributions.reduce((sum, member) => sum + member.Earnings,0);
@@ -174,12 +175,12 @@ const borrowerNumb = userd.number;
 const userDebt = selectedCircle.LoanBalance.find((member) => member.BorrowerNumber ===  borrowerNumb);
 
 const Loan = Object.values(selectedCircle.LoanBalance);
-const LentOut = Loan.reduce((sum, member) => sum + member.LoanAmount,0);
+const LentOut = Loan.reduce((sum, member) => sum + member.totalLoan,0);
 
-const totalBalanced =userDebt? userDebt.LoanAmount:0;
-const totalBalances = userDebt? userDebt.LoanInterest:0;
+const totalBalanced =userDebt? userDebt.totalLoan:0;
+// const totalBalances = userDebt? userDebt.LoanInterest:0;
 
-const totalpayment =totalBalanced  + totalBalances;
+const totalpayment =totalBalanced;
 
 if (userDebt) {
   response = `CON 
@@ -561,7 +562,7 @@ if (level === 3 && textArray[2] == 'a' ) {
       }
 
       selectedCircle.circleBalance[borrowerIndex].Balance -= loanAmount;
-      selectedCircle.MemberContribution[borrowerIndex].Contributed -= loanAmount;
+      // selectedCircle.MemberContribution[borrowerIndex].Contributed -= loanAmount;
 
             // Set the loan disbursed date
       const disbursedDate = new Date();
@@ -594,12 +595,15 @@ if (level === 3 && textArray[2] == 'a' ) {
         const simpleInterest = (loanAmount * interestRate * timePeriodInMonths) / 100;
         const simpleInterestFormatted = simpleInterest.toFixed(2); // Display with 2 decimal places
       
+        const totalLoan = parseFloat(loanAmount) + parseFloat(simpleInterestFormatted);
+
         const users = await User.findOne({number: loanRequest.BorrowerNumber})
        console.log(users.FirstName)
         const loanBalance = {
           BorrowerNumber: loanRequest.BorrowerNumber,
           LoanAmount: loanAmount,
           LoanInterest:simpleInterestFormatted,
+          totalLoan: totalLoan,
           Name: users.FirstName,
           Status: loanRequest.Status = 'Approved',
           disbursedDate: disbursedDate,
@@ -759,77 +763,6 @@ if (level === 3 && textArray[2] === '4') {
   
 }  
 
-
-if (level === 3 && textArray[2] === "6") {
-  const selectedCircleIndex = parseInt(textArray[1]) - 1;
-  const userCircles = await Savings.find({ 
-    $or: [
-      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
-      { 'GroupMembers.Creator': phoneNumber },
-      { 'GroupMembers.AdminNumber1': phoneNumber },
-      { 'GroupMembers.AdminNumber2': phoneNumber }
-    ]
-   });
-  const selectedCircle = userCircles[selectedCircleIndex];
-  const selected = userCircles[selectedCircleIndex];
-
-
-
-  // Check if the user is in debt
-  const userd = await User.findOne({ number: phoneNumber });
-  const borrowerNumb = userd.number;
-  const userDebt = selectedCircle.LoanBalance.findIndex((member) => member.BorrowerNumber === borrowerNumb);
-
-  // Update the loan balance for the user
-  const loanBalance = selectedCircle.LoanBalance[userDebt];
-  const repaymentAmount = loanBalance.LoanAmount + loanBalance.LoanInterest;
-  const circleInterest = loanBalance.LoanInterest;
-  loanBalance.LoanAmount = 0;
-  loanBalance.LoanInterest = 0;
-  await selectedCircle.save();
- 
-  
-  // Check if user has enough balance in the wallet to repay the loan
-  const wallet = await Wallet.findOne({ user: userd._id });
-  
-  if (wallet.balance >= repaymentAmount) {
-    // Update the wallet balance
-    wallet.balance -= repaymentAmount;
-    await wallet.save();
-
-
-     // Update the circle balance
-     const selectedCircleIdString = selectedCircle._id.toString();
-     const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === selectedCircleIdString);
-
-     selected.circleBalance[memberIndex2].Balance += repaymentAmount;
-     selected.circleBalance[memberIndex2].LoanInterest += circleInterest;
-     selectedCircle.MemberContribution[memberIndex2].Contributed += repaymentAmount;
-     await selected.save();
- 
-     // Remove the loan balance entry
-     selectedCircle.LoanBalance.splice(userDebt, 1);
-     await selectedCircle.save();
-
-    // const updateLoanPayment = async (circleId) => {
-    //   const circle = await selectedCircle.LoanBalance.findIndex((member)=>member.BorrowerNumber === userDebt.BorrowerNumber);
-    //   circle.LoanPaymentStatus = true;
-    //   circle.LoanPaymentDate = new Date();
-    //   await circle.save();
-    // };
-
-    // Call the updateLoanPayment() function to update loan payment status and payment date
-    // await updateLoanPayment(selectedCircle._id); // Pass the circle ID to the function
-
-    response = `END Repayment of $<b>${repaymentAmount}</b> successful. Your loan balance has been cleared.`;
-  } else {
-    response = `END Insufficient balance. Your wallet balance is not enough to repay the loan.`;
-    return response;
-  }
-
-  return response;
-}
-
 if (level === 3 && textArray[2] === '5') {
   async function confirmDetails() {
     let user = await Savings.findOne({
@@ -904,8 +837,102 @@ if (level === 3 && textArray[2] === '5') {
   response = `END ${memberToRemove} has been removed from the circle.`;
   return response;
 }
-  // Handle join circle and create circle options here
-  // ...
+  
+if(level === 3 && textArray[2] ==="6"){
+  const selectedCircleIndex = parseInt(textArray[1]) - 1;
+  const userCircles = await Savings.find({
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+  });
+  const selectedCircle = userCircles[selectedCircleIndex];
+  const selected = userCircles[selectedCircleIndex];
+
+  // Check if the user is in debt
+  const userd = await User.findOne({ number: phoneNumber });
+  const borrowerNumb = userd.number;
+  const userDebt = selectedCircle.LoanBalance.findIndex((member) => member.BorrowerNumber === borrowerNumb);
+
+  // Update the loan balance for the user
+  const loanBalance = selectedCircle.LoanBalance[userDebt];
+  const remainingLoanAmount = loanBalance.totalLoan;
+
+  response = `CON Enter the amount you want to pay towards your loan balance:\nLoan Balance: $${remainingLoanAmount}\n`;
+  return response;
+}else{
+  const selectedCircleIndex = parseInt(textArray[1]) - 1;
+  const userCircles = await Savings.find({
+    $or: [
+      { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+      { 'GroupMembers.Creator': phoneNumber },
+      { 'GroupMembers.AdminNumber1': phoneNumber },
+      { 'GroupMembers.AdminNumber2': phoneNumber }
+    ]
+  });
+
+  const repaymentAmount = parseFloat(textArray[3]);
+ console.log('Input:',repaymentAmount)
+
+  const selectedCircle = userCircles[selectedCircleIndex];
+  const selected = userCircles[selectedCircleIndex];
+
+  // Check if the user is in debt
+  const userd = await User.findOne({ number: phoneNumber });
+  const borrowerNumb = userd.number;
+  const userDebt = selectedCircle.LoanBalance.findIndex((member) => member.BorrowerNumber === borrowerNumb);
+  const loanBalance = selectedCircle.LoanBalance[userDebt];
+  // Check if user has enough balance in the wallet to repay the loan
+  const wallet = await Wallet.findOne({ user: userd._id });
+
+  if (isNaN(repaymentAmount) || repaymentAmount <= 0) {
+    response = `END Invalid amount. Please enter a valid amount to pay towards your loan balance.`;
+  } else if (wallet.balance >= repaymentAmount) {
+    // Update the wallet balance
+    wallet.balance -= repaymentAmount;
+    await wallet.save();
+
+    // Update the circle balance
+    const selectedCircleIdString = selectedCircle._id.toString();
+    const memberIndex2 = selectedCircle.circleBalance.findIndex((member) => member._id === selectedCircleIdString);
+
+    selected.circleBalance[memberIndex2].Balance += repaymentAmount;
+    // selected.circleBalance[memberIndex2].LoanInterest += loanBalance.LoanInterest;
+    selectedCircle.MemberContribution[memberIndex2].Contributed += repaymentAmount;
+
+    // Deduct the repayment amount from the loan balance
+    loanBalance.totalLoan -= repaymentAmount;
+
+    // Check if the loan is fully repaid
+    if (loanBalance.totalLoan === 0) {
+      // Remove the loan balance entry
+    selectedCircle.LoanBalance.splice(userDebt, 1);
+
+    // Update circleBalance with LoanInterest
+    selected.circleBalance[memberIndex2].LoanInterest += loanBalance.LoanInterest;
+    await selected.save();
+    }
+
+    await selected.save();
+    await selectedCircle.save();
+
+    response = `END Repayment of $${repaymentAmount} successful.`;
+
+    // Check if the loan is fully repaid
+    if (loanBalance.totalLoan === 0) {
+      response += ` Your loan balance has been cleared.`;
+    } else {
+      const totalRemaining = loanBalance.totalLoan;
+      response += ` Your remaining loan balance is K${totalRemaining}.`;
+    }
+  } else {
+    response = `END Insufficient balance. Your wallet balance is not enough to repay the loan.`;
+  }
+
+  return response;
+}
 
 };
 
