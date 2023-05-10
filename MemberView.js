@@ -900,7 +900,7 @@ if(level === 3 && textArray[2] ==="6"){
 
     selected.circleBalance[memberIndex2].Balance += repaymentAmount;
     // selected.circleBalance[memberIndex2].LoanInterest += loanBalance.LoanInterest;
-    selectedCircle.MemberContribution[memberIndex2].Contributed += repaymentAmount;
+    // selectedCircle.MemberContribution[memberIndex2].Contributed += repaymentAmount;
 
     // Deduct the repayment amount from the loan balance
     loanBalance.totalLoan -= repaymentAmount;

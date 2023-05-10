@@ -64,21 +64,37 @@ const sendSMS2 = async (phoneNumber, message) => {
 
 
 const menu = {
-  MainMenu: (userName,total,daysRemaining) => {
-   // Loan due in: <b>${daysRemaining} Days</b>
+  MainMenu: (userName,total,das,loans) => {
     
-    const response = `CON Welcome Back! ${userName}
-                          Loan Balance: <b>K${total}</b>
-                          Please choose an option:
-                          1. Circle Savings
-                          2. Personal Savings
-                          3. View Balances
-                          4. Payments
-                          5. Deposit/Withdraw from Momo
-                          6. Help
+     if(loans){
+      const response = `CON Welcome Back! ${userName}
+      Loan Balance: <b>K${total}</b>
+      Loan due in: <b>${das} Days</b>
+      Please choose an option:
+      1. Circle Savings
+      2. Personal Savings
+      3. View Balances
+      4. Payments
+      5. Deposit/Withdraw from Momo
+      6. Help
+
+      `;
+return response;
+    }else{
+      const response = `CON Welcome Back! ${userName}
+      Please choose an option:
+      1. Circle Savings
+      2. Personal Savings
+      3. View Balances
+      4. Payments
+      5. Deposit/Withdraw from Momo
+      6. Help
+
+      `;
+return response;
+
+    }
     
-                          `;
-    return response;
     
   },
   unregisteredMenu: () => {
@@ -474,8 +490,8 @@ const menu = {
     if(level === 1){
       response = `CON View your account balances
       
-      Your wallet balance $${mybalance}
-      Your savings balance $${savingsbalance.balance}
+      Wallet balance: K${mybalance}
+      Savings balance:K ${savingsbalance.balance}
       `;
 
       const userCircles = await Savings.find({ 
@@ -515,13 +531,20 @@ const menu = {
       const circleBalance =selectedCircle ? selectedCircle.circleBalance[0].Balance : 0;
 
       const contributions = Object.values(selectedCircle.MemberContribution);
-      const TotalEarned =contributions.reduce((sum, member) => sum + member.Earnings,0);
-      const allTotal = circleBalance + TotalEarned;
+      const TotalEarned =contributions.reduce((sum, member) => sum + member.Contributed,0);
+      
+      const groupMembers = selectedCircle.GroupMembers.length;
+      const interest = Object.values(selectedCircle.circleBalance);
+      const totalInterest = interest.reduce((sum, interests) => sum + interests.LoanInterest, 0);
+      const individualInterest = totalInterest / groupMembers;
+      
+
     
       response = `END 
-                  Circle Balance: K${circleBalance}
-                  Interest Earned:  K${TotalEarned} 
-                  Total Balance = K${allTotal}
+                  Group Balance: K${circleBalance}
+                  Your Contribution:  K${TotalEarned} 
+                  Penalties = K
+                  Your interest earned:${individualInterest}%
                   
                   `;
       return response;

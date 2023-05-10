@@ -60,16 +60,17 @@ router.post("/", (req, res) => {
       let userName;
       let userRegistered;
       let response = "";
-      let incurredLoan = "";
-      let loan = ""
-      let interest = ""
-      let total = ""
-      let daysRemaining =""
-      let calculate = ""
-      let currentDate= ""
-      let dueDate = ""
-      let timeDifference = ""
-      let days =""
+      let incurredLoan;
+      let loan;
+      let daysRemaining;
+      let total;
+      let days;
+      let dueDate;
+      let currentDate;
+      let timeDifference;
+      let day;
+      let loans;
+     
 
       if (!user) {
         userRegistered = false;
@@ -79,19 +80,28 @@ router.post("/", (req, res) => {
       
         num = user.number;
         loan = await Savings.findOne({'LoanBalance.BorrowerNumber':num});
+        loans = await Savings.findOne({'LoanBalance.BorrowerNumber':num});
         incurredLoan = loan ? loan.LoanBalance.find(balance => balance.BorrowerNumber === num) : null;
         incurred = incurredLoan ? incurredLoan.totalLoan : 0;
         total = incurred;
       
-        days = incurredLoan ? incurredLoan.daysRemaining : 0;
-       daysRemaining =days;
+         dueDate = incurredLoan?.dueDate;
+      currentDate = new Date();
+       timeDifference = dueDate?.getTime() - currentDate.getTime();
+        day = timeDifference ? Math.ceil(timeDifference / (1000 * 60 * 60 * 24)) : null;
+    
+    
+      }
+      
+      console.log('Days Remaining:', day); 
+      
+
+
+
+
      
 
-       
-
-
-         
-      }
+      
       
 
       
@@ -99,7 +109,7 @@ router.post("/", (req, res) => {
 
       // MAIN LOGIC
       if (text == "" && userRegistered == true) {
-        response = MainMenu(userName,total,incurred,daysRemaining);
+        response = MainMenu(userName,total,day,loans);
       } else if (text == "" && userRegistered == false) {
         response = unregisteredMenu();
       } else if (text != "" && userRegistered == false) {
