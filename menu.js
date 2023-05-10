@@ -64,7 +64,7 @@ const sendSMS2 = async (phoneNumber, message) => {
 
 
 const menu = {
-  MainMenu: (userName,total,das,loans) => {
+  MainMenu: (userName,total,das,loans,totalRequests) => {
     
      if(loans){
       const response = `CON Welcome Back! ${userName}
@@ -76,7 +76,8 @@ const menu = {
       3. View Balances
       4. Payments
       5. Deposit/Withdraw from Momo
-      6. Help
+      6. Notifications(<b>${totalRequests}</b>)
+      7. Help
 
       `;
 return response;
@@ -88,7 +89,8 @@ return response;
       3. View Balances
       4. Payments
       5. Deposit/Withdraw from Momo
-      6. Help
+      6. Notifications(<b>${totalRequests}</b>)
+      7. Help
 
       `;
 return response;
@@ -550,7 +552,49 @@ return response;
       return response;
     }
    
-  },
+  },  
+  Notification: async (textArray, phoneNumber) => {
+    let response = "";
+    const level = textArray.length;
+  
+    const userCircles = await Savings.find({
+      $or: [
+        { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+        { 'GroupMembers.Creator': phoneNumber },
+        { 'GroupMembers.AdminNumber1': phoneNumber },
+        { 'GroupMembers.AdminNumber2': phoneNumber }
+      ]
+    });
+  
+    if (level === 1) {
+      response = `CON <b>Notifications Menu</b>\n`;
+  
+      if (userCircles && userCircles.length > 0) {
+        userCircles.forEach((circle, index) => {
+          response += `${index + 1}. <b>${circle.GroupName}</b>\n`;
+  
+          const loanRequests = circle.LoanRequest;
+          if (loanRequests && loanRequests.length > 0) {
+            response += `Pending Loan Votes(<b>${loanRequests.length}</b>):\n`;
+  
+            loanRequests.forEach((request, i) => {
+              response += `${i + 1}. ${request.Name} (<b>K${request.LoanAmount}</b> for ${request.LoanReason})\n`;
+            });
+          } else {
+            response += `No pending loan votes\n`;
+          }
+  
+          response += '\n';
+        });
+      } else {
+        response += `No user circles found\n`;
+      }
+    }
+  
+    return response;
+  }
+  
+  
 };
 
 module.exports = menu;

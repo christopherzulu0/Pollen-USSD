@@ -8,7 +8,8 @@ const {
     WithdrawMoney,
     PersonalSavings,
     CheckBalance,
-    unregisteredMenu
+    unregisteredMenu,
+    Notification
    
   } = require("./menu");
 
@@ -70,6 +71,7 @@ router.post("/", (req, res) => {
       let timeDifference;
       let day;
       let loans;
+      let totalRequests;
      
 
       if (!user) {
@@ -85,15 +87,31 @@ router.post("/", (req, res) => {
         incurred = incurredLoan ? incurredLoan.totalLoan : 0;
         total = incurred;
       
+        //Display the of days remaining to due date
          dueDate = incurredLoan?.dueDate;
-      currentDate = new Date();
+        currentDate = new Date();
        timeDifference = dueDate?.getTime() - currentDate.getTime();
         day = timeDifference ? Math.ceil(timeDifference / (1000 * 60 * 60 * 24)) : null;
     
     
       }
       
-      console.log('Days Remaining:', day); 
+    //Count the number of Requests
+    const userCircles = await Savings.find({
+      $or: [
+        { 'GroupMembers.MemberPhoneNumber': phoneNumber },
+        { 'GroupMembers.Creator': phoneNumber },
+        { 'GroupMembers.AdminNumber1': phoneNumber },
+        { 'GroupMembers.AdminNumber2': phoneNumber }
+      ]
+    });
+
+    if (userCircles && userCircles.length > 0) {
+      userCircles.forEach((circle) => {
+      const loanRequests = circle.LoanRequest;
+       totalRequests =loanRequests.length;
+      });
+    }
       
 
 
@@ -109,7 +127,7 @@ router.post("/", (req, res) => {
 
       // MAIN LOGIC
       if (text == "" && userRegistered == true) {
-        response = MainMenu(userName,total,day,loans);
+        response = MainMenu(userName,total,day,loans,totalRequests);
       } else if (text == "" && userRegistered == false) {
         response = unregisteredMenu();
       } else if (text != "" && userRegistered == false) {
@@ -140,6 +158,9 @@ router.post("/", (req, res) => {
           case "5":
             response = await WithdrawMoney(textArray,phoneNumber);
             break;  
+            case "6":
+              response = await Notification(textArray,phoneNumber);
+              break;  
           default:
             response = "END Invalid choice. Please try again";
         }

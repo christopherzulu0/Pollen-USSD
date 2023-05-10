@@ -209,3 +209,15 @@ NB: These two pop up should  only be appearing if there a pending debt due, and 
     => Remember, if the loan isn't repayed or partially repaired. 
        There will be a penalty of the some amount. The means whatever the person contributed,
        the penalty will be deducted from his total person contribution
+
+
+       Notifications Menu
+       1. Alexa
+          Pending Loan Votes: 
+          i. Christopher(K50 for Education)
+          ii.Joseph(K300 for Insurance) 
+
+       2. Pollen Dev
+          Pending Loan Votes: 
+          i. Mary(K1000 for Groceries)
+          ii.Kelvin(K30 for Health) 
