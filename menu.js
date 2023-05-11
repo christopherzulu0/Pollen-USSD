@@ -540,7 +540,7 @@ return response;
       const groupMembers = selectedCircle.GroupMembers.length;
       const interest = Object.values(selectedCircle.circleBalance);
       const totalInterest = interest.reduce((sum, interests) => sum + interests.LoanInterest, 0);
-      const individualInterest = totalInterest / groupMembers;
+      const individualInterest =(totalInterest / groupMembers).toFixed(2);
       
 
     
