@@ -534,9 +534,18 @@ return response;
        //Get the balance for the selectedCircle
       const circleBalance =selectedCircle ? selectedCircle.circleBalance[0].Balance : 0;
 
-      const contributions = Object.values(selectedCircle.MemberContribution);
-      const TotalEarned =contributions.reduce((sum, member) => sum + member.Contributed,0);
-      
+     
+    //   const contributions = Object.values(selectedCircle.MemberContribution);
+    //   const TotalEarned =contributions.reduce((sum, member) => sum + member.Contributed,0);
+
+    // console.log("phone:",contributions.MemberPhoneNumber)
+
+    const userd = await User.findOne({ number: phoneNumber });
+    const ContributedNumber = userd.number;
+    const contributedCircle = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === ContributedNumber);
+    const availableContribution = selectedCircle.MemberContribution[contributedCircle];
+    const earns = availableContribution ? availableContribution.Contributed:0;
+
       const groupMembers = selectedCircle.GroupMembers.length;
       const interest = Object.values(selectedCircle.circleBalance);
       const totalInterest = interest.reduce((sum, interests) => sum + interests.LoanInterest, 0);
@@ -546,7 +555,7 @@ return response;
     
       response = `END 
                   Group Balance: K${circleBalance}
-                  Your Contribution:  K${TotalEarned} 
+                  Your Contribution:  K${earns} 
                   Penalties = K
                   Your interest earned:${individualInterest}%
                   
