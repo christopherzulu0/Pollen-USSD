@@ -97,18 +97,19 @@ router.post("/", (req, res) => {
       }
       
     //Count the number of Requests
-   
+    const notification =await User.findOne({number:phoneNumber});
+    const userfind = notification.number;
+
     const userCircles = await Savings.find({
       $or: [
-        { 'GroupMembers.MemberPhoneNumber': phoneNumber },
-        { 'GroupMembers.Creator': phoneNumber },
-        { 'GroupMembers.AdminNumber1': phoneNumber },
-        { 'GroupMembers.AdminNumber2': phoneNumber },
-        {  number: phoneNumber },
+        { 'GroupMembers.MemberPhoneNumber': userfind },
+        { 'GroupMembers.Creator': userfind },
+        { 'GroupMembers.AdminNumber1': userfind },
+        { 'GroupMembers.AdminNumber2': userfind },
       ]
     });
 
-    if (userCircles && userCircles.length > 0) {
+    if (userCircles &&  userCircles.length > 0) {
       userCircles.forEach((circle) => {
       const loanRequests = circle.LoanRequest;
        totalRequests =loanRequests.length;

@@ -67,6 +67,7 @@ const menu = {
   MainMenu: (userName,total,das,loans,totalRequests) => {
     
      if(loans){
+      const requestsCount = totalRequests || 0;
       const response = `CON Welcome Back! ${userName}
       Loan Balance: <b>K${total}</b>
       Loan due in: <b>${das} Days</b>
@@ -76,12 +77,13 @@ const menu = {
       3. View Balances
       4. Payments
       5. Deposit/Withdraw from Momo
-      6. Notifications(<b>${totalRequests}</b>)
+      6. Notifications(<b>${requestsCount}</b>)
       7. Help
 
       `;
 return response;
     }else{
+      const requestsCount = totalRequests || 0;
       const response = `CON Welcome Back! ${userName}
       Please choose an option:
       1. Circle Savings
@@ -89,7 +91,7 @@ return response;
       3. View Balances
       4. Payments
       5. Deposit/Withdraw from Momo
-      6. Notifications(<b>${totalRequests}</b>)
+      6. Notifications(<b>${requestsCount}</b>)
       7. Help
 
       `;
