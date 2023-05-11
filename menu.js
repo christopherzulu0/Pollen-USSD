@@ -228,13 +228,14 @@ return response;
     const mybalance = bal ? bal.balance : 0;
   
     const savingsbalance = await PersonalSavings.findOne({ user: user._id });
+    const savings = savingsbalance ? savingsbalance.balance:0;
   
     switch (level) {
       case 1:
         response = `CON Earn interest on your digital Dollars via Defi, current interest rate:
                     [APY]% 
                     Your wallet balance: $${mybalance}
-                    Your savings balance: $${savingsbalance.balance}
+                    Your savings balance: $${savings}
   
                     1. Deposit to savings
                     2. Withdraw from savings
@@ -487,13 +488,14 @@ return response;
 
   
     const savingsbalance = await PersonalSavings.findOne({ user: user._id });
+    const savings = savingsbalance ? savingsbalance.balance:0;
     
     
     if(level === 1){
       response = `CON View your account balances
       
       Wallet balance: K${mybalance}
-      Savings balance:K ${savingsbalance.balance}
+      Savings balance:K ${savings}
       `;
 
       const userCircles = await Savings.find({ 
