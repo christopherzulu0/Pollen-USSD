@@ -97,12 +97,14 @@ router.post("/", (req, res) => {
       }
       
     //Count the number of Requests
+   
     const userCircles = await Savings.find({
       $or: [
         { 'GroupMembers.MemberPhoneNumber': phoneNumber },
         { 'GroupMembers.Creator': phoneNumber },
         { 'GroupMembers.AdminNumber1': phoneNumber },
-        { 'GroupMembers.AdminNumber2': phoneNumber }
+        { 'GroupMembers.AdminNumber2': phoneNumber },
+        {  number: phoneNumber },
       ]
     });
 
