@@ -236,8 +236,8 @@ return response;
       case 1:
         response = `CON Earn interest on your digital Dollars via Defi, current interest rate:
                     [APY]% 
-                    Your wallet balance: $${mybalance}
-                    Your savings balance: $${savings}
+                    Your wallet balance: K${mybalance}
+                    Your savings balance: K${savings}
   
                     1. Deposit to savings
                     2. Withdraw from savings
@@ -247,11 +247,11 @@ return response;
         if (textArray[1] == 1) {
           response = `CON Enter an amount to deposit to savings.
                       Available wallet balance:
-                      $${mybalance}
+                      K${mybalance}
           `;
         } else if (textArray[1] == 2) {
           response = `CON Enter an amount to withdraw from savings.
-                       Available savings balance: $${savingsbalance.balance}
+                       Available savings balance: K${savingsbalance.balance}
                        `;
         }
         break;
@@ -292,7 +292,7 @@ return response;
             savingsbalance.balance = Number(savingsbalance.balance) + Number(amount);
             await savingsbalance.save();
             await bal.save();
-            response = `END Successfully deposited $${amount} to your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+            response = `END Successfully deposited K${amount} to your savings account. Your new savings balance is $${savingsbalance.balance}.`;
           } else if (textArray[1] == 2) {
             // Deduct amount from savings balance
             savingsbalance.balance -= amount;
@@ -300,7 +300,7 @@ return response;
             bal.balance = Number(bal.balance) + Number(amount);
             await savingsbalance.save();
             await bal.save();
-            response = `END Successfully withdrew $${amount} from your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+            response = `END Successfully withdrew K${amount} from your savings account. Your new savings balance is $${savingsbalance.balance}.`;
           }
           return response;
         }
@@ -559,7 +559,7 @@ return response;
                   Group Balance: K${circleBalance}
                   Your Contribution:  K${earns} 
                   Penalties = K
-                  Your interest earned:${individualInterest}%
+                  Your interest earned:K${individualInterest}
                   
                   `;
       return response;

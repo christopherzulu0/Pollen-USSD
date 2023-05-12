@@ -246,7 +246,7 @@ if (userDebt) {
     response = `CON 
       Deposit funds to ${selectedCircle.GroupName}
       Available to deposit:
-      $ <b>${balance}</b>
+      K <b>${balance}</b>
       `;
   
     return  response;
@@ -270,7 +270,7 @@ if (userDebt) {
     if (isNaN(depositAmount) || depositAmount <= 0) {
       response = `CON 
         Invalid deposit amount. Please enter a valid amount:
-        $`;
+        K`;
       return response;
     }
   
@@ -281,9 +281,9 @@ if (userDebt) {
     // Check if the deposit amount is greater than the user's wallet balance or if it is equal to 0
     if (depositAmount > userWallet.balance || depositAmount === 0) {
       response = `CON 
-        Insufficient funds or invalid deposit amount. Your wallet balance is $<b>${userWallet.balance}</b>.
+        Insufficient funds or invalid deposit amount. Your wallet balance is K<b>${userWallet.balance}</b>.
         Please enter a valid deposit amount:
-        $`;
+        K`;
       return response;
     }
   
@@ -378,7 +378,7 @@ if (userDebt) {
     
         // Display success message to the user
         response = `END 
-          Your Deposit of $<b>${depositAmount}</b> was successful to <b>${selectedCircle.GroupName}</b>.
+          Your Deposit of K<b>${depositAmount}</b> was successful to <b>${selectedCircle.GroupName}</b>.
           You will receive an sms if we encounter any issues.
         `;
     
@@ -918,7 +918,7 @@ if(level === 3 && textArray[2] ==="6"){
     await selected.save();
     await selectedCircle.save();
 
-    response = `END Repayment of $${repaymentAmount} successful.`;
+    response = `END Repayment of K${repaymentAmount} successful.`;
 
     // Check if the loan is fully repaid
     if (loanBalance.totalLoan === 0) {
