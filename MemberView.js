@@ -1,5 +1,4 @@
 const {Transaction, Wallet, User,Savings,LoanRequest} = require('./models/Schemas');
-const handleDebts = require("./CircleMenu");
 const countryCode = require("./util/countryCode");
 const { response } = require("express");
 const bcrypt = require("bcrypt");
