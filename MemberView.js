@@ -560,7 +560,22 @@ if (level === 3 && textArray[2] == 'a' ) {
         return response;
       }
 
+
       selectedCircle.circleBalance[borrowerIndex].Balance -= loanAmount;
+      
+      //After the loan request is approved,Add the loan amount to the borrower wallet
+      const userwallet = await  User.findOne({number: loanRequest.BorrowerNumber});
+      console.log("number:",userwallet.number)
+      const wallet = await Wallet.findOne({ user: userwallet._id });
+      
+     if(!wallet){
+      response = `END Error: borrower wallet not found`;
+      return response;
+     }
+     
+      wallet.balance += loanAmount;
+      await wallet.save();
+      
       // selectedCircle.MemberContribution[borrowerIndex].Contributed -= loanAmount;
 
             // Set the loan disbursed date
@@ -579,12 +594,7 @@ if (level === 3 && textArray[2] == 'a' ) {
       // Save the updated loanRequest object
       await selectedCircle.save();
 
-      const borrower = await Wallet.findOneAndUpdate(
-        { MemberPhoneNumber: loanRequest.BorrowerNumber },
-        { $inc: { balance: loanAmount } },
-        { new: true }
-      );
-
+  
         //Get the value for interest rate
         const interestValue = selectedCircle && selectedCircle.InterestRate ? selectedCircle.InterestRate : 'Unknown Group'; // Use a default value if GroupName is not present
       
@@ -749,18 +759,17 @@ if (level === 3 && textArray[2] === '4') {
   let response = "CON Loan Balances:\n";
   for (let i = 0; i < selected.LoanBalance.length; i++) {
     const member = selected.LoanBalance[i];
-    const total = member.LoanInterest + member.LoanAmount;
-  
+  const totalLoans = member.totalLoan;
     response += `
         ${member.Name}                   
-        1. Loan Balance: <b>K${total}</b>
-        2. Loan Interest: <b>K${member.LoanInterest}</b>  
+        1. Loan Balance: <b>K${totalLoans}</b>
+         
     `;
   }
   
   return response;
   
-}  
+} 
 
 if (level === 3 && textArray[2] === '5') {
   async function confirmDetails() {
@@ -859,7 +868,7 @@ if(level === 3 && textArray[2] ==="6"){
   const loanBalance = selectedCircle.LoanBalance[userDebt];
   const remainingLoanAmount = loanBalance.totalLoan;
 
-  response = `CON Enter the amount you want to pay towards your loan balance:\nLoan Balance: $${remainingLoanAmount}\n`;
+  response = `CON Enter the amount you want to pay towards your loan balance:\nLoan Balance: K${remainingLoanAmount}\n`;
   return response;
 }else{
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
