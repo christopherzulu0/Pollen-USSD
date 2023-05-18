@@ -566,7 +566,7 @@ return response;
     }
    
   },  
-  Notification: async (textArray, phoneNumber) => {
+  Notification: async (textArray, phoneNumber,userName, total, das, loans, totalRequests) => {
     let response = "";
     const level = textArray.length;
   
@@ -602,6 +602,11 @@ return response;
       } else {
         response += `No user circles found\n`;
       }
+      response += `99. Go Back\n`;
+    } else if (level === 2 && textArray[1] === '99') {
+      // Call the MainMenu function
+      response =  menu.MainMenu(userName, total, das, loans, totalRequests);
+    
     }
   
     return response;

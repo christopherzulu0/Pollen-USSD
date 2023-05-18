@@ -115,18 +115,7 @@ if (userCircles && userCircles.length > 0) {
     totalRequests += loanRequests.length;
   });
 }
-      
-
-
-
-
-     
-
-      
-      
-
-      
-      
+        
 
       // MAIN LOGIC
       if (text == "" && userRegistered == true) {
@@ -162,7 +151,7 @@ if (userCircles && userCircles.length > 0) {
             response = await WithdrawMoney(textArray,phoneNumber);
             break;  
             case "6":
-              response = await Notification(textArray,phoneNumber);
+              response = await Notification(textArray, phoneNumber, userName, total, day, loans, totalRequests);
               break;  
           default:
             response = "END Invalid choice. Please try again";
@@ -175,10 +164,6 @@ if (userCircles && userCircles.length > 0) {
   res.send(response);
   // DONE!!!
 })
-
-
-
-
 
 .catch((err) => {
     console.log({ err });
