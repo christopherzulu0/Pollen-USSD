@@ -6,7 +6,6 @@ const qs = require("qs");
 const { response } = require('express');
 
 
-
 const sendSMS = async (phoneNumber, message) => {
   const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
   const USERNAME = "sandbox";
@@ -263,7 +262,7 @@ return response;
             response = `END You have insufficient balance`;
             return response;
           } else {
-            response = `CON Enter your pin to deposit $${amount} into savings.
+            response = `CON Enter your pin to deposit K${amount} into savings.
                         `;
           }
         } else if (textArray[1] == 2) {
@@ -271,7 +270,7 @@ return response;
             response = `END You have insufficient savings balance`;
             return response;
           } else {
-            response = `CON Enter your pin to withdraw $${amount} from savings.
+            response = `CON Enter your pin to withdraw K${amount} from savings.
                         `;
           }
         }
@@ -292,7 +291,7 @@ return response;
             savingsbalance.balance = Number(savingsbalance.balance) + Number(amount);
             await savingsbalance.save();
             await bal.save();
-            response = `END Successfully deposited K${amount} to your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+            response = `END Successfully deposited K${amount} to your savings account. Your new savings balance is K${savingsbalance.balance}.`;
           } else if (textArray[1] == 2) {
             // Deduct amount from savings balance
             savingsbalance.balance -= amount;
@@ -300,7 +299,7 @@ return response;
             bal.balance = Number(bal.balance) + Number(amount);
             await savingsbalance.save();
             await bal.save();
-            response = `END Successfully withdrew K${amount} from your savings account. Your new savings balance is $${savingsbalance.balance}.`;
+            response = `END Successfully withdrew K${amount} from your savings account. Your new savings balance is K${savingsbalance.balance}.`;
           }
           return response;
         }
@@ -579,6 +578,7 @@ return response;
       ]
     });
   
+    
     if (level === 1) {
       response = `CON <b>Notifications Menu</b>\n`;
   
@@ -602,14 +602,16 @@ return response;
       } else {
         response += `No user circles found\n`;
       }
-      response += `99. Go Back\n`;
-    } else if (level === 2 && textArray[1] === '99') {
-      // Call the MainMenu function
-      response =  menu.MainMenu(userName, total, das, loans, totalRequests);
-    
-    }
+       // Add a button to go to the userRegistered menu
+    response += `99. Go Back\n`;
+  } else if (level === 2 && textArray[1] === '99') {
+    // Call the MainMenu function
+    response =  menu.MainMenu(userName, total, das, loans, totalRequests);
   
-    return response;
+  }
+
+  return response;
+    
   }
   
   

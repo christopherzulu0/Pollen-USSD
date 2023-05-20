@@ -82,6 +82,9 @@ const handleMember = async (textArray, phoneNumber) => {
   }
   
   if (level === 2) {
+
+   
+
     // Show the details of the selected circle
     const selectedCircleIndex = parseInt(textArray[1]) - 1;
     const userCircles = await Savings.find({ 
@@ -193,6 +196,7 @@ if (userDebt) {
     4. Loan Balance
     5. Other Actions (Admins Only)
     6. Repay Loan(<b>K${totalpayment}</b>)
+    0. Go Back
   `;
    return response;
 } else {
@@ -206,9 +210,11 @@ if (userDebt) {
     3. Group Balances
     4. Loan Balance
     5. Other Actions (Admins Only)
-
+    0. Go Back
   `;
   return response;
+
+  
 }
 
   }
@@ -846,6 +852,11 @@ if (level === 3 && textArray[2] === '5') {
   return response;
 }
   
+if(level === 3 && textArray[2] === "0"){
+  response = await  handleMember(textArray.slice(0, 1), phoneNumber);
+  return response;
+}
+
 if(level === 3 && textArray[2] ==="6"){
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
   const userCircles = await Savings.find({
