@@ -149,10 +149,10 @@ if (userCircles && userCircles.length > 0) {
               break;
           case "5":
             response = await WithdrawMoney(textArray,phoneNumber);
-            break;  
+            break;
             case "6":
-              response = await Notification(textArray, phoneNumber, userName, total, day, loans, totalRequests);
-              break;  
+              response = await Notification(textArray, phoneNumber, userName, total, days, loans, totalRequests);
+              break;
           default:
             response = "END Invalid choice. Please try again";
         }

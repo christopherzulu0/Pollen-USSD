@@ -3,9 +3,10 @@ const axios = require("axios");
 const countryCode = require("./util/countryCode");
 const bcrypt = require("bcrypt");
 const qs = require("qs");
+
+const HandleSavings = require('./HandleSavings')
 const { response } = require('express');
-
-
+const CircleSavings = require("./menu")
 const sendSMS = async (phoneNumber, message) => {
   const API_KEY = "1ee443c7d1bbe988ba87ead7b338cdc3aca397ecb471337570ac0b18b74ad7f9";
   const USERNAME = "sandbox";
@@ -67,7 +68,7 @@ const menu = {
     
      if(loans){
       const requestsCount = totalRequests || 0;
-      const response = `CON Welcome Back! ${userName}
+      const response = `CON Welcome Back! <b>${userName}</b>
       Loan Balance: <b>K${total}</b>
       Loan due in: <b>${das} Days</b>
       Please choose an option:
@@ -83,7 +84,7 @@ const menu = {
 return response;
     }else{
       const requestsCount = totalRequests || 0;
-      const response = `CON Welcome Back! ${userName}
+      const response = `CON Welcome Back! <b>${userName}</b>
       Please choose an option:
       1. Circle Savings
       2. Personal Savings
@@ -216,9 +217,7 @@ return response;
         break;
     }
     return response;
-  }
-  ,
-  
+  },
 
   PersonalSavings: async (textArray, phoneNumber) => {
     const level = textArray.length;
@@ -534,7 +533,7 @@ return response;
     
        //Get the balance for the selectedCircle
       const circleBalance =selectedCircle ? selectedCircle.circleBalance[0].Balance : 0;
-
+      const circleInterest = selectedCircle ? selectedCircle.circleBalance[0].LoanInterest:0;
      
     //   const contributions = Object.values(selectedCircle.MemberContribution);
     //   const TotalEarned =contributions.reduce((sum, member) => sum + member.Contributed,0);
@@ -547,18 +546,21 @@ return response;
     const availableContribution = selectedCircle.MemberContribution[contributedCircle];
     const earns = availableContribution ? availableContribution.Contributed:0;
 
-      const groupMembers = selectedCircle.GroupMembers.length;
-      const interest = Object.values(selectedCircle.circleBalance);
-      const totalInterest = interest.reduce((sum, interests) => sum + interests.LoanInterest, 0);
-      const individualInterest =(totalInterest / groupMembers).toFixed(2);
-      
+    const totalInterest =earns/circleBalance*circleInterest;
 
     
       response = `END 
-                  Group Balance: K${circleBalance}
-                  Your Contribution:  K${earns} 
+                 Hi,<b>${userd.FirstName}!\n</b>
+                 1. <b>Group Details</b>
+                  Balance: <b>K${circleBalance}</b>
+                  Interest:  <b>K${circleInterest}</b>
                   Penalties = K
-                  Your interest earned:K${individualInterest}
+                   
+                 2. <b>Personal Information</b>
+                  Contribution:<b>K${earns}</b>
+                  Working:
+                  <b>Contribution</b>/<b>Balance</b>*<b>Interest</b>
+                  Your interest = <b>K${totalInterest}</b>
                   
                   `;
       return response;
@@ -568,7 +570,7 @@ return response;
   Notification: async (textArray, phoneNumber,userName, total, das, loans, totalRequests) => {
     let response = "";
     const level = textArray.length;
-  
+    
     const userCircles = await Savings.find({
       $or: [
         { 'GroupMembers.MemberPhoneNumber': phoneNumber },
@@ -604,11 +606,46 @@ return response;
       }
        // Add a button to go to the userRegistered menu
     response += `99. Go Back\n`;
-  } else if (level === 2 && textArray[1] === '99') {
-    // Call the MainMenu function
-    response =  menu.MainMenu(userName, total, das, loans, totalRequests);
+  }if (level === 2 && textArray[1] === '99') {
+    if (loans) {
+      const requestsCount = totalRequests || 0;
+      const response = `CON Welcome Back! <b>${userName}</b>
+        Loan Balance: <b>K${total}</b>
+        Loan due in: <b>${das} Days</b>
+        Please choose an option:
+        1. Circle Savings
+        2. Personal Savings
+        3. View Balances
+        4. Payments
+        5. Deposit/Withdraw from Momo
+        6. Notifications(<b>${requestsCount}</b>)
+        7. Help
   
+        `;
+      return response;
+    } else {
+      const requestsCount = totalRequests || 0;
+      const response = `CON Welcome Back! <b>${userName}</b>
+        Please choose an option:
+        1. Circle Savings
+        2. Personal Savings
+        3. View Balances
+        4. Payments
+        5. Deposit/Withdraw from Momo
+        6. Notifications(<b>${requestsCount}</b>)
+        7. Help
+  
+        `;
+      return response;
+    }
+  } else if (level === 3 && textArray[2]==='99') {
+        response = await CircleSavings(textArray, phoneNumber);
+      
+    return response;
   }
+  
+  
+  
 
   return response;
     

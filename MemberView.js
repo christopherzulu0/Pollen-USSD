@@ -186,10 +186,10 @@ const totalpayment =totalBalanced;
 
 if (userDebt) {
   response = `CON 
-    <b>${selected.GroupName} Group</b>
-    Balance: <u><b>K${totalBalance}</b></u>
-    Lent Out: <u><b>K${LentOut}</b></u>
-    Interest Earned: <u> <b>${totalInterest}%</b></u>
+  <b>${selected.GroupName} Group</b>
+  Balance: <u>K<b>${totalBalance}</b></u>
+  Lent Out: <u>K<b>${LentOut}</b></u>
+  Interest Earned: <u><b>${totalInterest}</b></u>
     1. Deposit Fund
     2. Request Loan
     3. Group Balances
@@ -203,8 +203,8 @@ if (userDebt) {
   response = `CON 
   <b>${selected.GroupName} Group</b>
     Balance: <u>K<b>${totalBalance}</b></u>
-    Lent Out: <u>K${LentOut}</u>
-    Interest Earned: <u><b>${totalInterest}%</b></u>
+    Lent Out: <u>K<b>${LentOut}</b></u>
+    Interest Earned: <u><b>${totalInterest}</b></u>
     1. Deposit Fund
     2. Request Loan
     3. Group Balances
@@ -710,37 +710,30 @@ if (level === 3 && textArray[2] === '3') {
       { 'GroupMembers.AdminNumber1': phoneNumber },
       { 'GroupMembers.AdminNumber2': phoneNumber }
     ]
-   });
+  });
+  
   const selected = userCircles[selectedCircleIndex];
 
-  if (selected.MemberContribution.length === 0) {
-    // If MemberContribution array has no data, display "No contributions"
-   const  response = "CON No contributions";
+  if (!selected || !selected.MemberContribution || selected.MemberContribution.length === 0) {
+    // If no selected circle or no contributions, display "No contribution"
+    const response = "CON No contribution";
     return response;
   }
 
-  let totalContributed = 0;
-  let totalEarned = 0;
-
+  let response = "CON <b>Member Contributions:</b>";
   for (let i = 0; i < selected.MemberContribution.length; i++) {
-    const member = selected.MemberContribution[i];
-    totalContributed += member.Contributed;
-    totalEarned += member.Earnings;
+    const contribution = selected.MemberContribution[i];
+    const username = contribution.FirstName;
+    const contributes = contribution.Contributed || 0;
 
-    totalAvailable = totalEarned + totalContributed;
+    response += `
+    Name: <b>${username}</b>
+    Total Contributed: <b>K${contributes}</b>
+    `;
   }
-  
-  response = `CON 
-              Total Contributions: <b>K${totalContributed}</b>
-              Contribution Interest: <b>K${totalEarned}</b>
-              _____________________________________
-              Total Balance = <b>K${totalAvailable}</b>
-              `;
+
   return response;
-
-
 }
-
 
 if (level === 3 && textArray[2] === '4') {
   
@@ -949,7 +942,7 @@ if(level === 3 && textArray[2] ==="6"){
   } else {
     response = `END Insufficient balance. Your wallet balance is not enough to repay the loan.`;
   }
-
+  response =`END invalid input`;
   return response;
 }
 
