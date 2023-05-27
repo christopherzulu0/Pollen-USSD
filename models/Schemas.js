@@ -178,6 +178,10 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true
       },
+      ProposedMonths:{
+        type:Number,
+        required:true
+      },
      Name: {
         type: String,
         required: true
@@ -276,6 +280,36 @@ const UserSchema = mongoose.Schema({
         type:String,
         required: true,
       },
+    }],
+    MemberStats:[{
+    Amount: {
+            type: Number,
+            default: 0
+          },
+   Date: {
+            type: String,
+            default: Date.now
+          },
+      PaidLoans:{
+        type: Number,
+        default:0
+      },
+      GoalsMet:{
+        type: Number,
+        default:0
+      },
+      MemberPhoneNumber:{
+        type:Number,
+        required:true
+      },
+      Name:{
+        type: String,
+        required: true
+      },
+      LatePayments:{
+        type:Number,
+        default:0
+      }
     }],
     circleBalance:[
       {

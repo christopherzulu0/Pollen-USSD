@@ -1,223 +1,41 @@
-                                                                FLOWS
-
-                                                              Group Balance                      
-     TYPE OF VILLAGE BANKING MODELS                             => Total Contributions + 
-                                                              Interest Earned
-            = General VB Account                        
-
-        1.Have a clear set saving goal/amount.
-        2.Fixed Interest rate Change                            Loan Balance
-        3.Mandatory Contributions                                =>Total Group Contributions * Interest rate
-        4.Have a min & max monthly contribution.                 =>IndividualBalance
-        5.Taking out of loans is optional THOUGH encouraged.     =>Individual interest earned
-        6.Penalty on missed monthly contributions.
-        7.Penalty on defaulted loans
-
-        GENERAL VB MENU[
-        1.Enter Circle name
-        2.Select account type
-        3.Input interest rate
-        4.Input Saving goal
-        5.Input Min_Contribution
-        6.Input Max_Contribution
-        7.Input charge for late contribution
-        8.Input admin 1 number
-        9.Input admin 2 number
-
-        Confirm Menu[
-        Circle Name:
-         Account Type:
-         Interest Rate:
-         Min_Contribution:
-         Max_Contribution:
-         Saving Goal:
-         Penalty Charge:
-         Admins= 
-                Admin1: 
-                Admin2:
-        ]
-
-        ]
 
 
+Loan Request (Alert Menu)
+[
+Jessica R. Requested K1000
+Proposed Duration: 3 Months
 
+Jessica Stats
 
+Circle Deposits          K600
+Goals Met                7/7
+Borrow History           K250
+Loans Paid               2/2(1 Late)
 
-            
-            =FIXED VB  DEPOSIT ACCOUNT
-
-
-        1. Fixed saving goal
-        2.Fixed Interest rate
-        3.Fixed monthly contributions.
-        4.Taking out loan is mandatory.
-        5.Penalty on missed contributions.
-        6.Penalty on defaulted loans
-        7.Interest earned is shared equally.
-
-        FIXED VB MENU[
-        1.Enter Circle name
-        2.Select account type
-        3.Input interest rate
-        4.Input Saving goal
-        5.Input Min_Contribution
-        6.Input Max_Contribution
-        7.Input charge for late contribution
-        8.Input admin 1 number
-        9.Input admin 2 number
-
-        Confirm Menu[
-         Circle Name:
-         Account Type:
-         Interest Rate:
-         Min_Contribution:
-         Max_Contribution:
-         Saving Goal:
-         Penalty Charge:
-         Admins= 
-                Admin1: 
-                Admin2:
-        ]
-
-        ]
-
-
-
-
-
-
-      AFTER CIRCLE IS CREATED
-
-      
-      ADMIN VIEW{
-       
-       Menu[
-        1. Invite Members
-        2. Vote on General VB request(2) ? Approve Fixed VB Requests(2) 
-        3. Group Balance 
-        4. Loan Balance 
-       ]
-
-      }
-
-      Views
-      1.MemberView (General VB)
-                   (Fixed VB) => No voting
-
-      2. AdminView (General VB)
-                   (Fixed VB) => No Voting
-
-
-        CIRCLE MENU
-
-        => Balances -> Group Balance[
-                Total Contributions: K 200
-                Interest Earned: K 50
-               ______________________________
-                Total Balance = K 250
-                
-        ]
-   
-
-        => Loan Balance[
-                //Add all loan amounts + Interest rate
-                Laon Earnings : K 250
-
-                Balance                       Earned
-                John = k 50                   K 20
-                James = K100                  K 40
-        ]
-    
-   
-
-   *Remaining Updates
-   => Send texts to all group members when there is a loan request.
-       -Display circle menu once the member votes
-
-   => Display loan balance to first Menu
-   => Allow members to join and not create groups when already in a group.
-   => Back functionality
-
-Loan Request Menu Days*
-1. 1 Month(30 Days)
-2. 2 Months(60 Days)
-3. 3 Months(90 Days)
-4. 6 Months(180 Days)
-5. 1 Year(360 Days)
-
-// Function for selecting Month type
-const selectAccountType = () => {
-  return `CON The Government type can be 
-          1. 1 Month(30 Days)
-          2. 2 Months(60 Days)
-          3. 3 Months(90 Days)
-          4. 6 Months(180 Days)
-          5. 1 Year(360 Days)
-        `;
-};
-
-const defaultValues = {
-  OneMonth: {
-    monthTypeName: "30"
-  },
- TwoMonths: {
-    monthTypeName: "60"
-  },
-  ThreeMonths: {
-    monthTypeName: "90"
-  },
-  FourMonths: {
-    monthTypeName: "180"
-  },
-  FiveMonths: {
-    monthTypeName: "360"
-  }
-};
-
-
-Loan Repayment 
--Deduct from the wallet
--Remove it from the collection
--Update circleBalance
-
-Wallet: 5300
-circleBalance: k600
-
-
-
-FIXES
-
-VIEW BALANCE MENU
-It must be showing the following:
-1) wallet balance 
-2) saving balance 
-
-Group Balance. 
-1) Alexa 
-[Group balance: K 
-Your contribution: K 
-Penalties: K 
-Interested earned(by the Individuals): K
+ Vote Yes                            
+ Vote No
 ]
 
 
+Past Proposals
+[
+  11/13 Proposals have passed
 
-MAIN MENU(we need pop up messages for)
-1) pending notifications on proposals ( something like: messages/ notifications (2) alexa (3) pollen dev)
+  Jane N.                                 Yes: 10
+  Borrowed K600                            No: 2
 
-NB: These two pop up should  only be appearing if there a pending debt due, and pending proposals to vote
-    => Remember, if the loan isn't repayed or partially repaired. 
-       There will be a penalty of the some amount. The means whatever the person contributed,
-       the penalty will be deducted from his total person contribution
+  Christopher Z.                          Yes: 4
+  Borrowed K100                            No: 3
+
+  Simon.                                  Yes: 5
+  Borrowed K300                            No: 2
+]
 
 
-       Notifications Menu
-       1. Alexa
-          Pending Loan Votes: 
-          i. Christopher(K50 for Education)
-          ii.Joseph(K300 for Insurance) 
-
-       2. Pollen Dev
-          Pending Loan Votes: 
-          i. Mary(K1000 for Groceries)
-          ii.Kelvin(K30 for Health) 
+My Stats
+[
+My Deposits                            K200
+Interest Earned                        K50
+Goals Met                              4
+Loans Repaid                           5
+]

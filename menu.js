@@ -558,8 +558,6 @@ return response;
                    
                  2. <b>Personal Information</b>
                   Contribution:<b>K${earns}</b>
-                  Working:
-                  <b>Contribution</b>/<b>Balance</b>*<b>Interest</b>
                   Your interest = <b>K${totalInterest}</b>
                   
                   `;
