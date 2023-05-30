@@ -1,1 +1,0 @@
-To get values for balance even if the database is empty in View Balances option

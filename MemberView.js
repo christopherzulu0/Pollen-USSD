@@ -1001,7 +1001,7 @@ if (level === 3 && textArray[2] === "6") {
   } else {
     response = `END Insufficient balance. Your wallet balance is not enough to repay the loan.`;
   }
-    response = `END The selected option, does not exist.Please try again.`;
+   
   return response;
 }
 };
