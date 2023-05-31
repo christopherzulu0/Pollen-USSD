@@ -787,12 +787,13 @@ if (level === 3 && textArray[2] === '4') {
     const totalLoans = member.totalLoan;
     const interest = member.LoanInterest;
     const borrowed = member.LoanAmount;
+    const totalBorrowed = borrowed +interest;
     const due = member.dueDate.toDateString();
     response += `                   
         <b>${member.Name}</b>:                     
-            Balance: <b>K${totalLoans}</b> left
+            Bal: <b>K${totalLoans}</b> left
             Due: <b>${due}</b>                        
-            Amount: <b>K${borrowed}</b> at <b>${interest}%</b>
+            LoanAmount:<b>K${totalBorrowed}</b>
          
     `;
   }
