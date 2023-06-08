@@ -535,20 +535,33 @@ return response;
       const circleBalance =selectedCircle ? selectedCircle.circleBalance[0].Balance : 0;
       const circleInterest = selectedCircle ? selectedCircle.circleBalance[0].LoanInterest:0;
      
-    //   const contributions = Object.values(selectedCircle.MemberContribution);
-    //   const TotalEarned =contributions.reduce((sum, member) => sum + member.Contributed,0);
 
-    // console.log("phone:",contributions.MemberPhoneNumber)
-
+    //Get member contribution data
     const userd = await User.findOne({ number: phoneNumber });
     const ContributedNumber = userd.number;
     const contributedCircle = selectedCircle.MemberContribution.findIndex((member) => member.MemberPhoneNumber === ContributedNumber);
     const availableContribution = selectedCircle.MemberContribution[contributedCircle];
-    const earns = availableContribution ? availableContribution.Contributed:0;
-
-    const totalInterest =earns/circleBalance*circleInterest;
+    const MemberContributes = availableContribution ? availableContribution.Contributed:0;
 
     
+    //Get Loan Balance Date for the user
+    const Loans = selectedCircle.LoanBalance.findIndex((member) => member.BorrowerNumber === ContributedNumber);
+    const outstandingLoans = selectedCircle.LoanBalance[Loans];
+    const MemberLoan = outstandingLoans ? outstandingLoans.totalLoan:0;
+    console.log("MemberLoan:", MemberLoan);
+
+    //Get total interest for all outstanding loans
+    const totalLoanInterest = selectedCircle.LoanBalance.reduce((sum, member) => {
+      if (member.Status === 'Approved') {
+        return sum + member.LoanInterest;
+      }
+      return sum;
+    }, 0);
+    
+    
+    //Calculate user expected interest
+    const expected = (circleInterest + totalLoanInterest)%(MemberContributes-MemberLoan)%(circleBalance-circleInterest);
+   
       response = `END 
                  Hi,<b>${userd.FirstName}!\n</b>
                  1. <b>Group Details</b>
@@ -557,8 +570,8 @@ return response;
                   Penalties = K
                    
                  2. <b>Personal Information</b>
-                  Contribution:<b>K${earns}</b>
-                  Your interest = <b>K${totalInterest}</b>
+                  Contribution:<b>K${MemberContributes}</b>
+                  Your interest = <b>K${expected}</b>
                   
                   `;
       return response;
@@ -605,41 +618,6 @@ return response;
        // Add a button to go to the userRegistered menu
     response += `99. Go Back\n`;
   }if (level === 2 && textArray[1] === '99') {
-    if (loans) {
-      const requestsCount = totalRequests || 0;
-      const response = `CON Welcome Back! <b>${userName}</b>
-        Loan Balance: <b>K${total}</b>
-        Loan due in: <b>${das} Days</b>
-        Please choose an option:
-        1. Circle Savings
-        2. Personal Savings
-        3. View Balances
-        4. Payments
-        5. Deposit/Withdraw from Momo
-        6. Notifications(<b>${requestsCount}</b>)
-        7. Help
-  
-        `;
-      return response;
-    } else {
-      const requestsCount = totalRequests || 0;
-      const response = `CON Welcome Back! <b>${userName}</b>
-        Please choose an option:
-        1. Circle Savings
-        2. Personal Savings
-        3. View Balances
-        4. Payments
-        5. Deposit/Withdraw from Momo
-        6. Notifications(<b>${requestsCount}</b>)
-        7. Help
-  
-        `;
-      return response;
-    }
-  } else if (level === 3 && textArray[2]==='99') {
-        response = await CircleSavings(textArray, phoneNumber);
-      
-    return response;
   }
   
   

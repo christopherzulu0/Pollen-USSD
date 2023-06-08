@@ -2,36 +2,64 @@ const mongoose = require('mongoose');
 const shortid = require('shortid');
 const cron = require('node-cron');
 
-async function updateDaysRemaining() {
-  const currentDate = new Date();
-  const activeLoanRequests = await Savings.find({
-    'LoanBalance.Status': 'Approved',
-    'LoanBalance.dueDate': { $gte: currentDate },
-  });
 
-  activeLoanRequests.forEach((circle) => {
-    circle.LoanBalance.forEach((loanRequest) => {
-      const daysRemaining = Math.ceil(
-        (loanRequest.dueDate - currentDate) / (1000 * 60 * 60 * 24)
-      );
-      loanRequest.daysRemaining = daysRemaining;
-    });
 
-    circle.save();
-  });
-}
 
-// Schedule the task to run at midnight (00:00) every day
-cron.schedule('0 0 * * *', () => {
-  updateDaysRemaining();
+
+// Define the Session schema
+const sessionSchema = new mongoose.Schema({
+  sessionId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  phoneNumber: {
+    type: Number,
+    required: true,
+  },
+  lastAccessed: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-// const scheduledTask = cron.schedule('*/1 * * * *', () => {
-//   updateDaysRemaining();
-//   scheduledTask.stop(); // Stop the task after it has run once
-// });
+// Create the Session model
+const Session = mongoose.model('Session', sessionSchema);
 
-// No need to call any additional method to start the background task
+// Function to retrieve the active session for a phone number
+async function getSession(phoneNumber) {
+  const session = await Session.findOne({ phoneNumber });
+  return session;
+}
+
+// Function to create or update a session for a phone number
+async function createOrUpdateSession(sessionId, phoneNumber) {
+  const session = await Session.findOneAndUpdate(
+    { phoneNumber },
+    { sessionId, lastAccessed: Date.now() },
+    { upsert: true, new: true }
+  );
+  return session;
+}
+
+// Middleware to update the session for each request
+async function updateSession(req, res, next) {
+  const { sessionId, phoneNumber } = req.body;
+  if (sessionId && phoneNumber) {
+    await createOrUpdateSession(sessionId, phoneNumber);
+  }
+  next();
+}
+
+// Schedule the task to update session last accessed time
+cron.schedule('*/10 * * * *', async () => {
+  const cutoffTime = new Date();
+  cutoffTime.setMinutes(cutoffTime.getMinutes() - 10);
+  await Session.deleteMany({ lastAccessed: { $lt: cutoffTime } });
+});
+
+
+
 
 
 const transactionSchema = new mongoose.Schema({
@@ -46,6 +74,11 @@ const transactionSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true
+  },
+  session: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Session',
+    required: false,
   },
   date: {
     type: Date,
@@ -64,6 +97,11 @@ const personalsavingsSchema = new mongoose.Schema({
     required: true,
     default: 0
   },
+  session: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Session',
+    required: false,
+  },
   transactions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Transaction'
@@ -80,6 +118,11 @@ const walletSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 0
+  },
+  session: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Session',
+    required: false,
   },
   transactions: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -117,7 +160,11 @@ const UserSchema = mongoose.Schema({
        type: String,
        required:true
      },
-     
+     session: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Session',
+      required: false,
+    },
    });
 
    const CircleSchema = mongoose.Schema({
@@ -164,6 +211,19 @@ const UserSchema = mongoose.Schema({
     InterestRate: {
       type: Number,
       required: true,
+    },
+    createdDate:{
+      type:Date,
+      default:null
+    },
+    closingDate:{
+      type:Date,
+      default:null
+    },
+    session: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Session',
+      required: false,
     },
     LoanRequest: [{
       _id: {
@@ -365,4 +425,13 @@ const Savings = mongoose.model('Savings', CircleSchema);
 const PersonalSavings = mongoose.model('PersonalSavings', personalsavingsSchema);
 // const LoanRequest = mongoose.model('LoanRequest', loanRequestSchema);
 
-module.exports = { Transaction, Wallet, User,Savings,PersonalSavings};
+module.exports = { 
+  Transaction,
+  Wallet,
+  User,
+  Savings,
+  PersonalSavings,
+  Session,
+  updateSession,
+  getSession,
+};

@@ -224,6 +224,13 @@ const handleNonRegisteredUser = async (textArray, phoneNumber,Admin,MultiAdmin,V
       { AdminNumber1: textArray[9], JoinedOn: new Date() },
       { AdminNumber2: textArray[10], JoinedOn: new Date() }
     ];
+
+    const createdDate = new Date();
+    Savings.createdDate = createdDate;
+
+    const closingDate = new Date();
+   closingDate.setMonth(closingDate.getMonth() + 1); // Set the due date to one month from the disbursed date
+    Savings.closingDate =closingDate;
     
     if (govType == 1) {
       savingsData = {
@@ -238,7 +245,9 @@ const handleNonRegisteredUser = async (textArray, phoneNumber,Admin,MultiAdmin,V
         DepositGoal: textArray[4],
         GroupCode: groupCode,
         InterestRate: textArray[5],
-        GroupMembers: groupMembers
+        GroupMembers: groupMembers,
+        createdDate: createdDate,
+        closingDate: closingDate
       };
     } else if (govType == 2) {
       savingsData = {

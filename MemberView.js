@@ -877,10 +877,6 @@ if (level === 3 && textArray[2] === '5') {
   return response;
 }
   
-if(level === 3 && textArray[2] === "0"){
-  response = await  handleMember(textArray.slice(0, 1), phoneNumber);
-  return response;
-}
 
 if (level === 3 && textArray[2] === "6") {
   const selectedCircleIndex = parseInt(textArray[1]) - 1;
@@ -1005,6 +1001,8 @@ if (level === 3 && textArray[2] === "6") {
    
   return response;
 }
+
+
 };
 
 

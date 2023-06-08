@@ -11,7 +11,7 @@ const {
     Notification
    
   } = require("./menu");
-
+  const cron = require('node-cron');
   const {CircleSavings} = require("./CircleController")
   
   const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
@@ -52,7 +52,56 @@ router.post("/", (req, res) => {
 
   console.log('#', req.body);
   
+  async function updateDaysRemaining() {
+    const currentDate = new Date();
+    const activeLoanRequests = await Savings.find({
+      'LoanBalance.Status': 'Approved',
+      'LoanBalance.dueDate': { $gte: currentDate },
+    });
   
+    activeLoanRequests.forEach((circle) => {
+      circle.LoanBalance.forEach((loanRequest) => {
+        const daysRemaining = Math.ceil(
+          (loanRequest.dueDate - currentDate) / (1000 * 60 * 60 * 24)
+        );
+        loanRequest.daysRemaining = daysRemaining;
+      });
+  
+      circle.save();
+    });
+  }
+  
+  async function updateCircleBalance() {
+    const currentDate = new Date();
+  
+    // Find all savings circles with closingDate equal to currentDate
+    const circles = await Savings.find({ closingDate: { $gte: currentDate }, });
+    const users = await User.findOne({number: phoneNumber});
+    const user_id = users._id;
+    for (const circle of circles) {
+      // Calculate the balance per group member
+      const groupMemberCount = circle.GroupMembers.length;
+      const balancePerMember = circle.circleBalance[0].Balance / groupMemberCount;
+  
+      // Credit each group member's wallet
+      for (const member of circle.GroupMembers) {
+        const wallet = await Wallet.findOne({ user: member.users._id });
+        wallet.balance += balancePerMember;
+        await wallet.save();
+      }
+  
+      // Deduct the balance from circleBalance
+      circle.circleBalance[0].Balance = 0;
+      await circle.save();
+    }
+  }
+  
+  
+  // Schedule the task to run every day
+  cron.schedule('0 0 * * *', () => {
+    updateDaysRemaining();
+    updateCircleBalance();
+  });
   
   User.findOne({ number: phoneNumber })
     .then( async (user) => {
