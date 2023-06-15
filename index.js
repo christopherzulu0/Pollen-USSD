@@ -1,18 +1,18 @@
 const express = require("express");
 const router = express.Router();
+const cron = require('node-cron');
 const {
-    MainMenu,
-    Register,
-    SendMoney,
-    WithdrawMoney,
-    PersonalSavings,
-    CheckBalance,
-    unregisteredMenu,
-    Notification
-   
-  } = require("./menu");
-  const cron = require('node-cron');
-  const {CircleSavings} = require("./CircleController")
+  MainMenu,
+  Register,
+  unregisteredMenu,
+} = require("./menu");
+const { PersonalSavings } = require("./Personal_Savings");
+const { CheckBalance } = require("./CheckBalance");
+const { SendMoney } = require("./SendMoney");
+const { WithdrawMoney } = require("./Withdraw_Money");
+const { Notification } = require("./Notifications");
+const { CircleSavings } = require("./CircleController")
+
   
   const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
   const mongoose = require("mongoose");
@@ -46,11 +46,16 @@ const {
 
 
 router.post("/", (req, res) => {
+console.log("#",req.body)
+
+  const { sessionId, serviceCode, phoneNumber, textbody } = req.body;
   
-
-  const { sessionId, serviceCode, phoneNumber, text } = req.body;
-
-  console.log('#', req.body);
+ 
+  // }
+  let spintext
+  String(req.body.text).lastIndexOf('*99') != -1 ? spintext = req.body.text.slice(String(req.body.text).lastIndexOf('*99') + 4) : spintext = req.body.text ;
+  const text = spintext
+  
   
   async function updateDaysRemaining() {
     const currentDate = new Date();
@@ -169,6 +174,7 @@ if (userCircles && userCircles.length > 0) {
       // MAIN LOGIC
       if (text == "" && userRegistered == true) {
         response = MainMenu(userName,total,day,loans,totalRequests);
+
       } else if (text == "" && userRegistered == false) {
         response = unregisteredMenu();
       } else if (text != "" && userRegistered == false) {
@@ -182,13 +188,13 @@ if (userCircles && userCircles.length > 0) {
         }
       } else {
         const textArray = text.split("*");
-
         switch (textArray[0]) {
+          
           case "1":
             response = await CircleSavings(textArray, phoneNumber);
             break;
           case "2": 
-              response = await PersonalSavings(textArray, phoneNumber);
+              response = await PersonalSavings(textArray, phoneNumber,userName, total, day, loans, totalRequests);
               break;
           case "3":
               response = await CheckBalance(textArray,phoneNumber);
@@ -200,7 +206,7 @@ if (userCircles && userCircles.length > 0) {
             response = await WithdrawMoney(textArray,phoneNumber);
             break;
             case "6":
-              response = await Notification(textArray, phoneNumber, userName, total, days, loans, totalRequests);
+              response = await Notification(textArray, phoneNumber, userName, total, day, loans, totalRequests);
               break;
           default:
             response = "END Invalid choice. Please try again";

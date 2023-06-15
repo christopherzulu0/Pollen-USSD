@@ -48,9 +48,7 @@ const handleMember = async (textArray, phoneNumber) => {
     });
 
     return response;
-  }
-  
-  if (level === 2) {
+  }else if (level === 2) {
 
    
 
@@ -195,7 +193,7 @@ if (userDebt) {
     4. Loan Balance
     5. Other Actions (Admins Only)
     6. Repay Loan(<b>K${totalpayment}</b>)
-    0. Go Back
+    99. Go Back
   `;
    return response;
 } else {
@@ -209,7 +207,7 @@ if (userDebt) {
     3. Group Balances
     4. Loan Balance
     5. Other Actions (Admins Only)
-    0. Go Back
+    99. Go Back
   `;
   return response;
 
@@ -251,6 +249,7 @@ if (userDebt) {
       Deposit funds to ${selectedCircle.GroupName}
       Available to deposit:
       K <b>${balance}</b>
+      99. Go Back
       `;
   
     return  response;
@@ -274,7 +273,9 @@ if (userDebt) {
     if (isNaN(depositAmount) || depositAmount <= 0) {
       response = `CON 
         Invalid deposit amount. Please enter a valid amount:
-        K`;
+        K
+        99. Go Back
+        `;
       return response;
     }
   
@@ -287,7 +288,9 @@ if (userDebt) {
       response = `CON 
         Insufficient funds or invalid deposit amount. Your wallet balance is K<b>${userWallet.balance}</b>.
         Please enter a valid deposit amount:
-        K`;
+        K
+        99. Go Back
+        `;
       return response;
     }
   
@@ -396,16 +399,18 @@ if (userDebt) {
         await selectedCircle.save();
     
         // Display success message to the user
-        response = `END 
+        response = `CON 
           Your Deposit of K<b>${depositAmount}</b> was successful to <b>${selectedCircle.GroupName}</b>.
           You will receive an sms if we encounter any issues.
+          99. Go Back
         `;
     
         return response;
       } else {
         // Display error message to the user
-        response = `END 
+        response = `CON
           Invalid PIN. Please try again.
+          99. Go Back
         `;
         return response;
       }
@@ -426,7 +431,9 @@ if (userDebt) {
       const totals = balance + interest;
 
       if (balance) {
-        response = `END You still owe k${totals}.Repay the loan to continue.`;
+        response = `CON You still owe k${totals}.Repay the loan to continue.
+                    99. Go Back
+                  `;
         return response;
       }
       
@@ -434,6 +441,7 @@ if (userDebt) {
       // Proceed with loan request
       response = `CON Why do you need a loan?
       Write a description..
+      
       `;
       return response;
     }
@@ -481,7 +489,9 @@ if (level === 6 && textArray[2] === '2' && textArray[3] && textArray[5]) {
     response = `CON 
       Insufficient savings in the circle to request a loan. Your available savings is $<b>${totalBalance}</b>.
       Please enter a valid loan amount:
-      $`;
+      $
+      99. Go Back
+      `;
     return response;
   }
 
@@ -527,9 +537,10 @@ if (level === 6 && textArray[2] === '2' && textArray[3] && textArray[5]) {
   } else {
     console.error('selectedCircle is undefined or null'); // Handle the case where selectedCircle is undefined or null
   }
-  response = `END 
+  response = `CON 
     Your loan request has been submitted for approval. You will receive a notification when it has been approved or rejected.
-  `;
+    99. Go Back
+    `;
   return response;
 }
 
@@ -549,12 +560,16 @@ if (level === 3 && textArray[2] == 'a') {
   const loanRequest = selectedCircle.LoanRequest.find((id) => id._id === id._id);
 
   if (!loanRequest) {
-    response = `END Loan request not found.`;
+    response = `CON Loan request not found.
+                99. Go Back
+                `;
     return response;
   }
 
   if (loanRequest.Status === 'Approved' || loanRequest.Status === 'Rejected') {
-    response = `END Loan request has already been processed.`;
+    response = `CON Loan request has already been processed.
+                99. Go Back
+                `;
     return response;
   }
 
@@ -566,12 +581,16 @@ if (level === 3 && textArray[2] == 'a') {
   if (totalRejectionVotes > totalApprovalVotes) {
     loanRequest.Status = 'Rejected';
     await selectedCircle.save();
-    response = `END Loan request has been rejected by a majority of group members.`;
+    response = `CON Loan request has been rejected by a majority of group members.
+                99. Go Back
+                `;
     return response;
   } else if (totalRejectionVotes === totalApprovalVotes) {
     loanRequest.Status = 'Pending Admin Approval';
     await selectedCircle.save();
-    response = `END Loan request has been neither approved nor rejected by all group members. It is now pending admin approval.`;
+    response = `CON Loan request has been neither approved nor rejected by all group members. It is now pending admin approval.
+               99. Go Back
+               `;
     return response;
   } else {
     if (totalApprovalVotes > Math.floor(totalGroupMembers / 2)) {
@@ -801,6 +820,8 @@ if (level === 3 && textArray[2] === '4') {
   return response;
   
 } 
+
+
 
 if (level === 3 && textArray[2] === '5') {
   async function confirmDetails() {
