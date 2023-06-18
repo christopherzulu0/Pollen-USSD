@@ -3,6 +3,7 @@ const axios = require('axios');
 const countryCode = require('./util/countryCode');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const { v4: uuidv4 } = require('uuid');
 
 const Send_Money = {
   SendMoney: async (textArray, phoneNumber) => {
@@ -100,43 +101,56 @@ const Send_Money = {
 };
 
 // Function to make a payment request to PawaPay
-async function makePawaPayPayment(amount, phoneNumber) {
+async function makePawaPayPayment(amount,phoneNumber) {
   const pawaPayEndpoint = "https://api.sandbox.pawapay.cloud/payouts"; // PawaPay API endpoint
-  const apiKey = "YeyJraWQiOiIxIiwiYWxnIjoiSFMyNTYifQ.eyJqdGkiOiJiMDlkZGUwMi1lYjgxLTQ0NzQtYWQ0Yi0wNGY4M2EwMDgxNDMiLCJzdWIiOiIxMjYiLCJpYXQiOjE2ODY3NDU4NjAsImV4cCI6MjAwMjM2NTA2MCwicG0iOiJEQUYsUEFGIiwidHQiOiJBQVQifQ.yJM3kKDMujwX6W9DMSvO4MULi3jTyZ7Q21hQRgzuykI"; // Replace with your PawaPay API key
-
+  const apiKey = "eyJraWQiOiIxIiwiYWxnIjoiSFMyNTYifQ.eyJqdGkiOiJiMDlkZGUwMi1lYjgxLTQ0NzQtYWQ0Yi0wNGY4M2EwMDgxNDMiLCJzdWIiOiIxMjYiLCJpYXQiOjE2ODY3NDU4NjAsImV4cCI6MjAwMjM2NTA2MCwicG0iOiJEQUYsUEFGIiwidHQiOiJBQVQifQ.yJM3kKDMujwX6W9DMSvO4MULi3jTyZ7Q21hQRgzuykI"; // Replace with your PawaPay API key
+  const user = await User.findOne({number:phoneNumber});
+  const ActualNumber = user.number;
   const payload = {
-    payoutId: "f4401bd2-1568-4140-bf2d-eb77d2b2b639", // Replace with your payout ID
+    payoutId: uuidv4(),
     amount: amount.toString(),
     currency: "ZMW",
     country: "ZMB",
-    correspondent: "MTN_MOMO_ZMB",
+    correspondent: "AIRTEL_OAPI_ZMB",
     recipient: {
       type: "MSISDN",
-      address: { value: phoneNumber },
+      address: {
+        value: ActualNumber
+      }
     },
     customerTimestamp: new Date().toISOString(),
-    statementDescription: "Up to 22 chars note",
+    statementDescription: "Ow to 22 chars note",
+    created: new Date().toISOString(),
+    receivedByRecipient: new Date().toISOString(),
+    correspondentIds: {
+      AIRTEL_INIT: "764724",
+      AIRTEL_FINAL: "hsdhs21"
+    },
+    failureReason: {
+      failureCode: "OTHER_ERROR",
+      failureMessage: "Recipient's address is blocked"
+    }
   };
 
-  const curlCommand = `curl -X POST ${pawaPayEndpoint} \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer ${apiKey}" \
-    -d '${JSON.stringify(payload)}'`;
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(payload)
+  };
 
-  console.log("Executing curl command:", curlCommand);
-
-  return new Promise((resolve, reject) => {
-    exec(curlCommand, (error, stdout, stderr) => {
-      if (error) {
-        console.error("Payment request error:", error);
-        reject(new Error("Payment request failed"));
-      } else {
-        console.log("Curl command output:", stdout);
-        const data = JSON.parse(stdout);
-        resolve(data);
-      }
-    });
-  });
+  try {
+    const response = await fetch(pawaPayEndpoint, requestOptions);
+    const data = await response.json();
+    console.log("API response:", data);
+    return data;
+  } catch (error) {
+    console.error("Payment request error:", error);
+    throw new Error("Payment request failed");
+  }
 }
+
 
 module.exports = Send_Money;
