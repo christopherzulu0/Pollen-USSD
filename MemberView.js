@@ -811,10 +811,10 @@ if (level === 3 && textArray[2] === '4') {
     const paid = totalBorrowed - totalLoans;
     response += `                   
         <b>${member.Name}</b>:                         
-            LoanAmount:<b>K${totalBorrowed}</b>
-            AmountPaid: <b>K${paid}</b>                 
-            OutstandingBalance: <b>K${totalLoans}</b> left
-            Due: <b>${due}</b>  
+        Loan Amt:<b>K${totalBorrowed}</b>
+        Amt Paid: <b>K${paid}</b>                 
+        Outstanding Bal: <b>K${totalLoans}</b> left
+        Due: <b>${due}</b>  
          
     `;
   }
