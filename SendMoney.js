@@ -9,8 +9,8 @@ const Send_Money = {
   SendMoney: async (textArray, phoneNumber) => {
 
            //PawaPay MTN Deposits
-           async function mtnDeposits(amount, phoneNumber) {
-            const pawaPayEndpoint = process.env.pawaPayEndpoint; // PawaPay API endpoint
+           async function mtnPayouts(amount) {
+            const pawaPayEndpointPayouts = process.env.pawaPayEndpointPayouts; // PawaPay API endpoint
             const apiKey = process.env.PawaPayKey; // Replace with your PawaPay API key
             const receiver = countryCode(textArray[2]);
             const user = await User.findOne({ number: receiver });
@@ -18,12 +18,12 @@ const Send_Money = {
             console.log("receiver:", receiverContact);
           
             const payload = {
-              depositId: uuidv4(),
+             payoutId: uuidv4(),
               amount: amount.toString(),
               currency: "ZMW",
               country: "ZMB",
               correspondent: "MTN_MOMO_ZMB",
-              payer: {
+              recipient: {
                 type: "MSISDN",
                 address: {
                   value: receiverContact,
@@ -44,7 +44,7 @@ const Send_Money = {
             };
           
             try {
-              const response = await axios.post(pawaPayEndpoint, payload, {
+              const response = await axios.post(pawaPayEndpointPayouts, payload, {
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${apiKey}`,
@@ -60,6 +60,57 @@ const Send_Money = {
             }
           }
           
+          //AirtelPayouts
+          async function airtelPayouts(amount) {
+            const pawaPayEndpointPayouts = process.env.pawaPayEndpointPayouts; // PawaPay API endpoint
+            const apiKey = process.env.PawaPayKey; // Replace with your PawaPay API key
+            const receiver = countryCode(textArray[2]);
+            const user = await User.findOne({ number: receiver });
+            const receiverContact = user.number;
+            console.log("receiver:", receiverContact);
+
+            const payload = {
+             payoutId: uuidv4(),
+              amount: amount.toString(),
+              currency: "ZMW",
+              country: "ZMB",
+              correspondent: "AIRTEL_OAPI_ZMB",
+              recipient: {
+                type: "MSISDN",
+                address: {
+                  value: receiverContact
+                }
+              },
+              customerTimestamp: new Date().toISOString(),
+              statementDescription: "Ow to 22 chars note",
+              created: new Date().toISOString(),
+              receivedByRecipient: new Date().toISOString(),
+              correspondentIds: {
+                AIRTEL_INIT: "764724",
+                AIRTEL_FINAL: "hsdhs21"
+              },
+              failureReason: {
+                failureCode: "OTHER_ERROR",
+                failureMessage: "Recipient's address is blocked"
+              }
+            };
+          
+            try {
+              const response = await axios.post(pawaPayEndpointPayouts, payload, {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${apiKey}`,
+                },
+              });
+          
+              console.log("Response status code:", response.status);
+              console.log("Response data:", response.data);
+              return response.data;
+            } catch (error) {
+              console.error("Payment request error:", error.response);
+              throw new Error("Payment request failed");
+            }
+          }
           
           
 
@@ -116,9 +167,9 @@ const Send_Money = {
 
         // Make payment request to PawaPay
         try {
-          const paymentResponse = await airtelDeposits(amount, receiverNumber);
+          const paymentResponse = await airtelPayouts(amount, receiverNumber);
           // Process the payment response from PawaPay
-          if (paymentResponse.success) {
+          if (paymentResponse.status === 'ACCEPTED') {
             // Deduct from sender's balance and add to receiver's balance
             sender.balance -= amount;
             receiverWallets.balance += amount;
@@ -206,7 +257,7 @@ const Send_Money = {
  
         try {
 
-          const paymentResponse = await mtnDeposits(amount,textArray);
+          const paymentResponse = await mtnPayouts(amount,textArray);
           // Process the payment response from PawaPay
           if (paymentResponse.status === 'ACCEPTED') {
             // Deduct from sender's balance and add to receiver's balance
