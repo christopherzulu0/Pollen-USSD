@@ -189,7 +189,7 @@ if (userDebt) {
   Interest Earned: <u><b>${totalInterest}</b></u>
     1. Deposit Fund
     2. Request Loan
-    3. Group Balances
+    3. Member Contribution
     4. Loan Balance
     5. Other Actions (Admins Only)
     6. Repay Loan(<b>K${totalpayment}</b>)
@@ -204,7 +204,7 @@ if (userDebt) {
     Interest Earned: <u><b>${totalInterest}</b></u>
     1. Deposit Fund
     2. Request Loan
-    3. Group Balances
+    3. Member Contribution
     4. Loan Balance
     5. Other Actions (Admins Only)
     99. Go Back
@@ -808,11 +808,13 @@ if (level === 3 && textArray[2] === '4') {
     const borrowed = member.LoanAmount;
     const totalBorrowed = borrowed +interest;
     const due = member.dueDate.toDateString();
+    const paid = totalBorrowed - totalLoans;
     response += `                   
-        <b>${member.Name}</b>:                     
-            Bal: <b>K${totalLoans}</b> left
-            Due: <b>${due}</b>                        
+        <b>${member.Name}</b>:                         
             LoanAmount:<b>K${totalBorrowed}</b>
+            AmountPaid: <b>K${paid}</b>                 
+            OutstandingBalance: <b>K${totalLoans}</b> left
+            Due: <b>${due}</b>  
          
     `;
   }

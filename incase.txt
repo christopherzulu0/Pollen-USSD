@@ -11,9 +11,17 @@ const Send_Money = {
     let response = "";
 
     if (level === 1) {
+      response = `CON 
+                   Seleect the network provider for the receiver
+                 1. Airtel
+                 2. MTN
+                 3. Zamtel
+                 `;
+      return response;
+    }  if (level === 2 && textArray[1] ===1) {
       response = `CON Enter mobile number of the receiver:`;
       return response;
-    } else if (level === 2) {
+    }else if (level === 2) {
       response = `CON Enter amount:`;
       return response;
     } else if (level === 3) {
@@ -50,7 +58,7 @@ const Send_Money = {
 
         // Make payment request to PawaPay
         try {
-          const paymentResponse = await makePawaPayPayment(amount, receiverNumber);
+          const paymentResponse = await Deposits(amount, receiverNumber);
           // Process the payment response from PawaPay
           if (paymentResponse.success) {
             // Deduct from sender's balance and add to receiver's balance
@@ -101,7 +109,55 @@ const Send_Money = {
 };
 
 // Function to make a payment request to PawaPay
-async function makePawaPayPayment(amount,phoneNumber) {
+async function makeAirtelPayment(amount, phoneNumber) {
+  const airtelEndpoint = "https://openapiuat.airtel.africa/auth/oauth2/token";
+  const clientId = "7367cd1d-1045-447f-8fc6-318aacffed2a "; // Replace with your Airtel Africa Client ID
+  const clientSecret = "****************************"; // Replace with your Airtel Africa Client Secret
+
+  const transactionId = uuidv4();
+
+  const authHeaders = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+  const payload = {
+    accountReference: transactionId,
+    mobileNumber: phoneNumber,
+    country: "ZMB",
+    currency: "ZMW",
+    amount: amount,
+    channel: "PAYER",
+    payer: {
+      partyIdType: "MSISDN",
+      partyId: phoneNumber,
+    },
+    payerMessage: "Payment from sender",
+    payeeNote: "Payment to receiver",
+  };
+
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Basic ${authHeaders}`,
+    },
+    body: JSON.stringify(payload),
+  };
+
+  const curlCommand = `curl -X POST -H "Content-Type: application/json" -H "Authorization: Basic ${authHeaders}" -d '${JSON.stringify(payload)}' ${airtelEndpoint}`;
+
+  try {
+    const { stdout, stderr } = await exec(curlCommand);
+    const response = JSON.parse(stdout);
+    console.log("API response:", response);
+    return response;
+  } catch (error) {
+    console.error("Payment request error:", error);
+    throw new Error("Payment request failed");
+  }
+}
+
+
+//PawaPay Payouts
+async function Payouts(amount,phoneNumber) {
   const pawaPayEndpoint = "https://api.sandbox.pawapay.cloud/payouts"; // PawaPay API endpoint
   const apiKey = "eyJraWQiOiIxIiwiYWxnIjoiSFMyNTYifQ.eyJqdGkiOiJiMDlkZGUwMi1lYjgxLTQ0NzQtYWQ0Yi0wNGY4M2EwMDgxNDMiLCJzdWIiOiIxMjYiLCJpYXQiOjE2ODY3NDU4NjAsImV4cCI6MjAwMjM2NTA2MCwicG0iOiJEQUYsUEFGIiwidHQiOiJBQVQifQ.yJM3kKDMujwX6W9DMSvO4MULi3jTyZ7Q21hQRgzuykI"; // Replace with your PawaPay API key
   const user = await User.findOne({number:phoneNumber});
@@ -115,7 +171,7 @@ async function makePawaPayPayment(amount,phoneNumber) {
     recipient: {
       type: "MSISDN",
       address: {
-        value: ActualNumber
+        value: "260973663366"
       }
     },
     customerTimestamp: new Date().toISOString(),
@@ -152,5 +208,56 @@ async function makePawaPayPayment(amount,phoneNumber) {
   }
 }
 
+//PawaPay Deposits
+async function Deposits(amount,phoneNumber) {
+  const pawaPayEndpoint = "https://api.sandbox.pawapay.cloud/deposits/resend-callback"; // PawaPay API endpoint
+  const apiKey = "eyJraWQiOiIxIiwiYWxnIjoiSFMyNTYifQ.eyJqdGkiOiJiMDlkZGUwMi1lYjgxLTQ0NzQtYWQ0Yi0wNGY4M2EwMDgxNDMiLCJzdWIiOiIxMjYiLCJpYXQiOjE2ODY3NDU4NjAsImV4cCI6MjAwMjM2NTA2MCwicG0iOiJEQUYsUEFGIiwidHQiOiJBQVQifQ.yJM3kKDMujwX6W9DMSvO4MULi3jTyZ7Q21hQRgzuykI"; // Replace with your PawaPay API key
+  const user = await User.findOne({number:phoneNumber});
+  const ActualNumber = user.number;
+  const payload = {
+    depositId: uuidv4(),
+    amount: amount.toString(),
+    currency: "ZMW",
+    country: "ZMB",
+    correspondent: "AIRTEL_OAPI_ZMB",
+    recipient: {
+      type: "MSISDN",
+      address: {
+        value: "260973663366"
+      }
+    },
+    customerTimestamp: new Date().toISOString(),
+    statementDescription: "Ow to 22 chars note",
+    created: new Date().toISOString(),
+    receivedByRecipient: new Date().toISOString(),
+    correspondentIds: {
+      AIRTEL_INIT: "764724",
+      AIRTEL_FINAL: "hsdhs21"
+    },
+    failureReason: {
+      failureCode: "OTHER_ERROR",
+      failureMessage: "Recipient's address is blocked"
+    }
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(payload)
+  };
+
+  try {
+    const response = await fetch(pawaPayEndpoint, requestOptions);
+    const data = await response.json();
+    console.log("API response:", data);
+    return data;
+  } catch (error) {
+    console.error("Payment request error:", error);
+    throw new Error("Payment request failed");
+  }
+}
 
 module.exports = Send_Money;

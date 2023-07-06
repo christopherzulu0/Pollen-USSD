@@ -202,7 +202,7 @@ const handleNonRegisteredUser = async (textArray, phoneNumber,Admin,MultiAdmin,V
                   Min_Contribution: ${textArray[6]}
                   Max_Contribution: ${textArray[7]}
                   SavingGoal: ${textArray[4]}
-                  PenaltyCharge: ${textArray[8]}
+                  Default Charge: ${textArray[8]}
                   Admin1: ${textArray[9]}
                   Admin2: ${textArray[10]}
                         

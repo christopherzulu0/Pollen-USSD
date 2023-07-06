@@ -72,7 +72,7 @@ const menu = {
       Loan Balance: <b>K${total}</b>
       Loan due in: <b>${das} Days</b>
       Please choose an option:
-      1. Circle Savings
+      1. Village Banking
       2. Personal Savings
       3. View Balances
       4. Payments
@@ -86,7 +86,7 @@ return response;
       const requestsCount = totalRequests || 0;
       const response = `CON Welcome Back! <b>${userName}</b>
       Please choose an option:
-      1. Circle Savings
+      1. Village Banking
       2. Personal Savings
       3. View Balances
       4. Payments
