@@ -15,8 +15,9 @@ const Send_Money = {
             const receiver = countryCode(textArray[2]);
             const user = await User.findOne({ number: receiver });
             const receiverContact = user.number;
-            console.log("receiver:", receiverContact);
-          
+            const reason  = textArray[4];
+            console.log("Reason:",reason);
+
             const payload = {
              payoutId: uuidv4(),
               amount: amount.toString(),
@@ -30,7 +31,7 @@ const Send_Money = {
                 },
               },
               customerTimestamp: new Date().toISOString(),
-              statementDescription: "Ow to 22 chars note",
+              statementDescription: reason,
               created: new Date().toISOString(),
               receivedByRecipient: new Date().toISOString(),
               correspondentIds: {
@@ -67,7 +68,8 @@ const Send_Money = {
             const receiver = countryCode(textArray[2]);
             const user = await User.findOne({ number: receiver });
             const receiverContact = user.number;
-            console.log("receiver:", receiverContact);
+            const reason  = textArray[4];
+            console.log("Reason:",reason);
 
             const payload = {
              payoutId: uuidv4(),
@@ -82,7 +84,7 @@ const Send_Money = {
                 }
               },
               customerTimestamp: new Date().toISOString(),
-              statementDescription: "Ow to 22 chars note",
+              statementDescription: reason,
               created: new Date().toISOString(),
               receivedByRecipient: new Date().toISOString(),
               correspondentIds: {
@@ -134,9 +136,12 @@ const Send_Money = {
       response = `CON Enter amount:`;
       return response;
     } else if (level === 4 && textArray[1] === '1') {
+      response = `CON Reason for sending the money`;
+      return response;
+    }else if (level === 5 && textArray[1] === '1') {
       response = `CON Enter your PIN:`;
       return response;
-    } else if (level === 5 && textArray[1] === '1') {
+    } else if (level === 6 && textArray[1] === '1') {
       const receiverNumber = countryCode(textArray[2]);
       const receivers = await User.findOne({ number: receiverNumber });
 
@@ -152,11 +157,12 @@ const Send_Money = {
         let senderName = user.FirstName;
         let receiverName = receiver.FirstName;
         let amount = parseInt(textArray[3]);
+        let reason = textArray[4]
         const senderWallet = sender.balance;
         let senderPin = user.pin;
 
         // Validate the PIN
-        if (textArray[4] !== senderPin) {
+        if (textArray[5] !== senderPin) {
           return (response = "CON Invalid PIN. Transaction cancelled.\n99. Go Back");
         }
 
@@ -180,6 +186,7 @@ const Send_Money = {
             let senderTransaction = new Transaction({
               type: "debit",
               amount: amount,
+              reason: reason,
               balance: sender.balance,
               user: sender._id,
               description: `Sent K${amount} to ${senderName}`,
@@ -187,6 +194,7 @@ const Send_Money = {
             let receiverTransaction = new Transaction({
               type: "credit",
               amount: amount,
+              reason: reason,
               balance: receiverWallets.balance,
               user: receiver._id,
               description: `Received K${amount} from ${receiverName}`,
@@ -221,9 +229,12 @@ const Send_Money = {
       response = `CON Enter amount:`;
       return response;
     } else if (level === 4 && textArray[1] === '2') {
+      response = `CON Reason for sending the money`;
+      return response;
+    }else if (level === 5 && textArray[1] === '2') {
       response = `CON Enter your PIN:`;
       return response;
-    } else if (level === 5 && textArray[1] === '2') {
+    } else if (level === 6 && textArray[1] === '2') {
       const receiverNumber = countryCode(textArray[2]);
       const receivers = await User.findOne({ number: receiverNumber });
 
@@ -239,12 +250,13 @@ const Send_Money = {
         let senderName = user.FirstName;
         let receiverName = receiver.FirstName;
         let amount = parseInt(textArray[3]);
+          let reason = textArray[4]
         const senderWallet = sender.balance;
         console.log("Total:",senderWallet)
         let senderPin = user.pin;
 
         // Validate the PIN
-        if (textArray[4] !== senderPin) {
+        if (textArray[5] !== senderPin) {
           return (response = "CON Invalid PIN. Transaction cancelled.\n99. Go Back");
         }
 
@@ -270,6 +282,7 @@ const Send_Money = {
             let senderTransaction = new Transaction({
               type: "debit",
               amount: amount,
+               reason: reason,
               balance: sender.balance,
               user: sender._id,
               description: `Sent K${amount} to ${senderName}`,
@@ -277,6 +290,7 @@ const Send_Money = {
             let receiverTransaction = new Transaction({
               type: "credit",
               amount: amount,
+              reason: reason,
               balance: receiverWallets.balance,
               user: receiver._id,
               description: `Received K${amount} from ${receiverName}`,

@@ -87,14 +87,14 @@ const CheckBalance = {
        
           response = `CON 
                      Hi,<b>${userd.FirstName}!\n</b>
-                     1. <b>Group Details</b>
+                     <b>Group Details</b>
                       Balance: <b>K${circleBalance}</b>
                       Interest:  <b>K${circleInterest}</b>
                       Penalties = K
                        
-                     2. <b>Personal Information</b>
+                     <b>Personal Information</b>
                       Contribution:<b>K${MemberContributes}</b>
-                      Your interest = <b>K${expected}</b>
+                      Earned Interest = <b>K${expected}</b>
                       
                       99. Go Back
                       `;

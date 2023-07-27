@@ -3,54 +3,6 @@ const shortid = require('shortid');
 const cron = require('node-cron');
 
 
-
-
-
-// Define the Session schema
-const sessionSchema = new mongoose.Schema({
-  sessionId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  phoneNumber: {
-    type: Number,
-    required: true,
-  },
-  lastAccessed: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-// Create the Session model
-const Session = mongoose.model('Session', sessionSchema);
-
-// Function to retrieve the active session for a phone number
-async function getSession(phoneNumber) {
-  const session = await Session.findOne({ phoneNumber });
-  return session;
-}
-
-// Function to create or update a session for a phone number
-async function createOrUpdateSession(sessionId, phoneNumber) {
-  const session = await Session.findOneAndUpdate(
-    { phoneNumber },
-    { sessionId, lastAccessed: Date.now() },
-    { upsert: true, new: true }
-  );
-  return session;
-}
-
-// Middleware to update the session for each request
-async function updateSession(req, res, next) {
-  const { sessionId, phoneNumber } = req.body;
-  if (sessionId && phoneNumber) {
-    await createOrUpdateSession(sessionId, phoneNumber);
-  }
-  next();
-}
-
 // Schedule the task to update session last accessed time
 cron.schedule('*/10 * * * *', async () => {
   const cutoffTime = new Date();
@@ -75,11 +27,10 @@ const transactionSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  session: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Session',
-    required: false,
-  },
+   reason:{
+     type:String,
+     required:true
+   },
   date: {
     type: Date,
     default: Date.now
@@ -220,11 +171,7 @@ const UserSchema = mongoose.Schema({
       type:Date,
       default:null
     },
-    session: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Session',
-      required: false,
-    },
+   
     LoanRequest: [{
       _id: {
         type: mongoose.Types.ObjectId,
@@ -430,8 +377,5 @@ module.exports = {
   Wallet,
   User,
   Savings,
-  PersonalSavings,
-  Session,
-  updateSession,
-  getSession,
+  PersonalSavings
 };
