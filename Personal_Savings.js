@@ -19,8 +19,8 @@ const Personal_Savings = {
       case 1:
         response = `CON Earn interest on your digital Dollars via Defi, current interest rate:
           [APY]%
-          Your wallet balance: K${mybalance}
-          Your savings balance: K${savings}
+          Your wallet balance: <b>K${mybalance}</b>
+          Your savings balance: <b>K${savings}</b>
 
           1. Deposit to savings
           2. Withdraw from savings
@@ -31,11 +31,11 @@ const Personal_Savings = {
         if (textArray[1] == 1) {
           response = `CON Enter an amount to deposit to savings.
             Available wallet balance:
-            K${mybalance}
+            <b>K${mybalance}</b>
           `;
         } else if (textArray[1] == 2) {
           response = `CON Enter an amount to withdraw from savings.
-                      Available savings balance: K${savingsbalance.balance}
+                      Available savings balance: <b>K${savingsbalance.balance}</b>
                       99. Go Back
                      `;
         }
@@ -50,7 +50,7 @@ const Personal_Savings = {
                        `;
             return response;
           } else {
-            response = `CON Enter your pin to deposit K${amount} into savings.
+            response = `CON Enter your pin to deposit <b>K${amount}</b> into savings.
               `;
           }
         } else if (textArray[1] == 2) {
@@ -60,7 +60,7 @@ const Personal_Savings = {
                         `;
             return response;
           } else {
-            response = `CON Enter your pin to withdraw K${amount} from savings.
+            response = `CON Enter your pin to withdraw <b>K${amount}</b> from savings.
               `;
           }
         }
@@ -81,7 +81,7 @@ const Personal_Savings = {
             savingsbalance.balance = Number(savingsbalance.balance) + Number(amount);
             await savingsbalance.save();
             await bal.save();
-            response = `CON Successfully deposited K${amount} to your savings account. Your new savings balance is K${savingsbalance.balance}.
+            response = `CON Successfully deposited <b>K${amount}</b> to your savings account. Your new savings balance is K${savingsbalance.balance}.
                          99. Go Back
                         `;
           } else if (textArray[1] == 2) {
@@ -91,7 +91,7 @@ const Personal_Savings = {
             bal.balance = Number(bal.balance) + Number(amount);
             await savingsbalance.save();
             await bal.save();
-            response = `CON Successfully withdrew K${amount} from your savings account. Your new savings balance is K${savingsbalance.balance}.
+            response = `CON Successfully withdrew <b>K${amount}</b> from your savings account. Your new savings balance is <b>K${savingsbalance.balance}</b>.
                        99. Go Back
                       `;
           }

@@ -90,7 +90,7 @@ const CheckBalance = {
                      <b>Group Details</b>
                       Balance: <b>K${circleBalance}</b>
                       Interest:  <b>K${circleInterest}</b>
-                      Penalties = K
+                      Penalties = K0
                        
                      <b>Personal Information</b>
                       Contribution:<b>K${MemberContributes}</b>

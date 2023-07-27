@@ -202,6 +202,7 @@ if (userDebt) {
     Balance: <u>K<b>${totalBalance}</b></u>
     Lent Out: <u>K<b>${LentOut}</b></u>
     Interest Earned: <u><b>${totalInterest}</b></u>
+    
     1. Deposit Fund
     2. Request Loan
     3. Member Contribution
