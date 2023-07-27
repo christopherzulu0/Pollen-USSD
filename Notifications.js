@@ -90,31 +90,33 @@ const Notifications = {
       }
 
       // Add a button to go to the userRegistered menu
-      response += `99. Go Back\n 77. Get Deposit Details\n 88. Get Payout Details`;
-    } else if (level === 2 && textArray[1] === '77') {
-      response = `CON Enter the deposit ID:`;
-    } else if (level === 3 && textArray[1] === '77') {
-      const depositId = textArray[2];
+      response += `99. Go Back`;
+    } 
+    
+    // else if (level === 2 && textArray[1] === '77') {
+    //   response = `CON Enter the deposit ID:`;
+    // } else if (level === 3 && textArray[1] === '77') {
+    //   const depositId = textArray[2];
 
-      try {
-        const paymentDetails = await getPaymentDetails(depositId, null);
+    //   try {
+    //     const paymentDetails = await getPaymentDetails(depositId, null);
 
-        if (paymentDetails.length > 0) {
-          response = `CON Payment Details for Deposit ID: ${depositId}\n`;
-          paymentDetails.forEach((detail, index) => {
-            response += `Payment ${index + 1}:\n`;
-            response += `Payer Number: ${detail.payer && detail.payer.address ? detail.payer.address.value : 'N/A'}\n`;
-            response += `Status: ${detail.status}\n`;
-            response += `Created: ${detail.created}\n\n`;
-          });
-        } else {
-          response = `CON No payment details found for Deposit ID: ${depositId}`;
-        }
-      } catch (error) {
-        console.error("Payment details request error:", error);
-        response = "CON Failed to retrieve payment details. Please try again later.";
-      }
-    }
+    //     if (paymentDetails.length > 0) {
+    //       response = `CON Payment Details for Deposit ID: ${depositId}\n`;
+    //       paymentDetails.forEach((detail, index) => {
+    //         response += `Payment ${index + 1}:\n`;
+    //         response += `Payer Number: ${detail.payer && detail.payer.address ? detail.payer.address.value : 'N/A'}\n`;
+    //         response += `Status: ${detail.status}\n`;
+    //         response += `Created: ${detail.created}\n\n`;
+    //       });
+    //     } else {
+    //       response = `CON No payment details found for Deposit ID: ${depositId}`;
+    //     }
+    //   } catch (error) {
+    //     console.error("Payment details request error:", error);
+    //     response = "CON Failed to retrieve payment details. Please try again later.";
+    //   }
+    // }
 
     return response;
   }
